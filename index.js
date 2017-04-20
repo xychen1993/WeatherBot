@@ -36,7 +36,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.use('/chat', Bot.router());
 
-var server = app.listen(3000);
+var server = app.listen(80);
 return server;
 
 
