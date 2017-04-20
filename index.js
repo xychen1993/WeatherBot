@@ -36,7 +36,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.use('/chat', Bot.router());
 
-var server = app.listen(process.env.PORT || 8080);
+var server = app.listen((process.env.PORT || 8080));
 return server;
 
 
