@@ -1,43 +1,73 @@
-const Bot = require('fb-local-chat-bot');
-const express = require('express');
-const bodyParser = require('body-parser')
-const Promise = require('bluebird');
-const getLocation = require('./nlp.js').getLocation;
-const getCase = require('./nlp.js').getCase;
-const cases = require('./cases.js').loadCases();
+const http = require('http')
+const Bot = require('messenger-bot')
 
-// initialize Bot and define event handlers
-Bot.init('<TOKEN>', '<VERIFY_TOKEN>', true /*useLocalChat*/, false /*useMessenger*/);
+let bot = new Bot({
+  token: 'PAGE_TOKEN',
+  verify: 'VERIFY_TOKEN',
+  app_secret: 'APP_SECRET'
+})
 
-Bot.on('text', (event) => {
-	// extract some parameters
-	const senderID = event.sender.id;
-	const text = event.message.text;
+bot.on('error', (err) => {
+  console.log(err.message)
+})
 
-	// get case
-	var location = getLocation(text);
-	var caseNode = getCase(text);
-	// perform action
-	messageBody = cases[caseNode].action();
+bot.on('message', (payload, reply) => {
+  let text = payload.message.text
 
-	// send message
-	Bot.sendText(senderID, "Location: " + JSON.stringify(location, null, 4));
-	Bot.sendText(senderID, "case: " + caseNode);
-	Bot.sendText(senderID, "messageBody: " + messageBody);
+  bot.getProfile(payload.sender.id, (err, profile) => {
+    if (err) throw err
+
+    reply({ text }, (err) => {
+      if (err) throw err
+
+      console.log(`Echoed back to ${profile.first_name} ${profile.last_name}: ${text}`)
+    })
+  })
+})
+
+// http.createServer(bot.middleware()).listen(3000)
+// console.log('Echo bot server running at port 3000.')
+
+// const Bot = require('fb-local-chat-bot');
+// const express = require('express');
+// const bodyParser = require('body-parser')
+// const Promise = require('bluebird');
+// const getLocation = require('./nlp.js').getLocation;
+// const getCase = require('./nlp.js').getCase;
+// const cases = require('./cases.js').loadCases();
+
+// // initialize Bot and define event handlers
+// Bot.init('<TOKEN>', '<VERIFY_TOKEN>', true /*useLocalChat*/, false /*useMessenger*/);
+
+// Bot.on('text', (event) => {
+// 	// extract some parameters
+// 	const senderID = event.sender.id;
+// 	const text = event.message.text;
+
+// 	// get case
+// 	var location = getLocation(text);
+// 	var caseNode = getCase(text);
+// 	// perform action
+// 	messageBody = cases[caseNode].action();
+
+// 	// send message
+// 	Bot.sendText(senderID, "Location: " + JSON.stringify(location, null, 4));
+// 	Bot.sendText(senderID, "case: " + caseNode);
+// 	Bot.sendText(senderID, "messageBody: " + messageBody);
 
 
-});
+// });
 
 
-const app = express();
+// const app = express();
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({extended: true}));
 
-app.use('/chat', Bot.router());
+// app.use('/chat', Bot.router());
 
-var server = app.listen((process.env.PORT || 8080));
-return server;
+// var server = app.listen((process.env.PORT || 8080));
+// return server;
 
 
 // Bot.on('text', async (event: object) => {
