@@ -39,6 +39,15 @@ function weatherResponse(time, location, senderID){
   		if(time == 'now'){
   			getResponse.currentWeather('Evanston', (data) => {
   				Bot.sendText(senderID, data);
+          Bot.sendButtons(
+            senderID,
+            'Some text',
+            [
+              Bot.createPostbackButton('button 1','BUTTON_TYPE_1')
+              
+            ]);
+
+
   			});
   		}
   		else if(time == 'tomorrow'){ // specific location future weather
