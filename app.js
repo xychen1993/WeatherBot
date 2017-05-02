@@ -6,6 +6,12 @@ const getLocation = require('./nlp.js').getLocation;
 const getTime = require('./nlp.js').getTime;
 const getResponse = require('./getWeatherData.js');
 
+const PostBackTypes = {
+  TELL_JOKE: 'TELL_JOKE',
+  TELL_ANOTHER_JOKE: 'TELL_ANOTHER_JOKE',
+};
+
+
 
 // initialize Bot and define event handlers
 Bot.init('<TOKEN>', '<VERIFY_TOKEN>', true /*useLocalChat*/, false /*useMessenger*/);
@@ -20,6 +26,29 @@ Bot.on('text', (event) => {
   //Bot.sendText(senderID, location + " " + time);
   weatherResponse(time,location,senderID);
 });
+
+Bot.on('postback', event => {
+    const senderID = event.sender.id;
+    console.log("event is ", event)
+    console.log("payload is ", event.postback.payload)
+    switch(event.postback.payload) {
+      case PostBackTypes.TELL_JOKE:
+        Bot.sendText(senderID, JOKE);
+        Bot.sendButtons(
+          senderID,
+          'Ha. Ha. Ha. What else may I do for you?',
+          [Bot.createPostbackButton('Tell me another joke', PostBackTypes.TELL_ANOTHER_JOKE)]
+        );
+        break;
+      case PostBackTypes.TELL_ANOTHER_JOKE:
+        Bot.sendText(senderID, 'Sorry, I only know one joke');
+        break;
+
+    }
+  });
+
+
+
 
 
 const app = express();
@@ -43,7 +72,7 @@ function weatherResponse(time, location, senderID){
             senderID,
             'Some text',
             [
-              Bot.createPostbackButton('button 1','BUTTON_TYPE_1')
+              Bot.createPostbackButton('How about tomorrow?', weatherResponse('tomorrow', location, senderID))
               
             ]);
 
