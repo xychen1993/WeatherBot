@@ -90,19 +90,19 @@ Bot.on('text', (event) => {
 	const senderID = event.sender.id;
 	const text = event.message.text;
 
-	Bot.sendText(senderID, "Ow! Splidao!");
+	// Bot.sendText(senderID, "Ow! Splidao!");
 
-	// // get case
-	// var location = getLocation(text);
-	// var caseNode = getCase(text);
+	// get case
+	var location = getLocation(text);
+	var caseNode = getCase(text);
 
-	// // perform action
-	// messageBody = cases[caseNode].action();
+	// perform action
+	messageBody = cases[caseNode].action();
 
-	// // send message
-	// Bot.sendText(senderID, "Location: " + JSON.stringify(location, null, 4));
-	// Bot.sendText(senderID, "case: " + caseNode);
-	// Bot.sendText(senderID, "messageBody: " + messageBody);
+	// send message
+	Bot.sendText(senderID, "Location: " + JSON.stringify(location, null, 4));
+	Bot.sendText(senderID, "case: " + caseNode);
+	Bot.sendText(senderID, "messageBody: " + messageBody);
 });
 
 
