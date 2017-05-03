@@ -29,7 +29,7 @@ exports.getCase = function (myText){
 			return id;
 		}
 	}
-	return "now";
+	return "DEFAULT";
 
 // 	var out = nlp(myText).match('#Date? ("pm|am|hour|hourly|hours")');
 
