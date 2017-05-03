@@ -14,9 +14,9 @@
 // app.use(bodyParser.json())
 
 // Index route
-app.get('/', function (req, res) {
-	res.send('Hello world, I am a chat bot')
-})
+// app.get('/', function (req, res) {
+// 	res.send('Hello world, I am a chat bot')
+// })
 
 // // for Facebook verification
 // app.get('/webhook/', function (req, res) {
@@ -82,6 +82,7 @@ const verify_token = "my_voice_is_my_password_verify_me";
 // initialize Bot and define event handlers
 Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
 
+// on text message
 Bot.on('text', (event) => {
 	// extract some parameters
 	const senderID = event.sender.id;
@@ -90,6 +91,7 @@ Bot.on('text', (event) => {
 	// get case
 	var location = getLocation(text);
 	var caseNode = getCase(text);
+
 	// perform action
 	messageBody = cases[caseNode].action();
 
@@ -97,17 +99,27 @@ Bot.on('text', (event) => {
 	Bot.sendText(senderID, "Location: " + JSON.stringify(location, null, 4));
 	Bot.sendText(senderID, "case: " + caseNode);
 	Bot.sendText(senderID, "messageBody: " + messageBody);
-
-
 });
 
 
+// deploy server
 const app = express();
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-app.use('/chat', Bot.router());
+// /webhook for fb and /webhook/localChat/ for local chat
+app.use('/webhook', Bot.router());
+// /* for checking if online
+app.get('/', function (req, res) {
+	res.send('WeatherBot is online')
+})
 
-var server = app.listen((process.env.PORT || 5000));
+// start server
+var server = app.listen((process.env.PORT || 5000), (err)=>{
+	if (err){
+		console.log("failed starting server...");	
+	}
+	console.log("process.env.PORT is " + String(process.env.PORT));
+	console.log("now running on port " + String(process.env.PORT || 5000));
+});
 return server;
