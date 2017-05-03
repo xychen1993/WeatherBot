@@ -80,30 +80,30 @@ const token = "EAALiqKh4YCoBAO1GygPcb7k1sDt7ye1qJR8hJrI6htjwKoZAw5wsRfEJzCqsFNQz
 const verify_token = "my_voice_is_my_password_verify_me";
 
 // initialize Bot and define event handlers
-// Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
+Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
 
-// // on text message
-// Bot.on('text', (event) => {
-// 	console.log("received text message from FB");
+// on text message
+Bot.on('text', (event) => {
+	console.log("received text message from FB");
 
-// 	// extract some parameters
-// 	const senderID = event.sender.id;
-// 	const text = event.message.text;
+	// extract some parameters
+	const senderID = event.sender.id;
+	const text = event.message.text;
 
-// 	Bot.sendText(senderID, "Ow! Splidao!");
+	Bot.sendText(senderID, "Ow! Splidao!");
 
-// 	// // get case
-// 	// var location = getLocation(text);
-// 	// var caseNode = getCase(text);
+	// // get case
+	// var location = getLocation(text);
+	// var caseNode = getCase(text);
 
-// 	// // perform action
-// 	// messageBody = cases[caseNode].action();
+	// // perform action
+	// messageBody = cases[caseNode].action();
 
-// 	// // send message
-// 	// Bot.sendText(senderID, "Location: " + JSON.stringify(location, null, 4));
-// 	// Bot.sendText(senderID, "case: " + caseNode);
-// 	// Bot.sendText(senderID, "messageBody: " + messageBody);
-// });
+	// // send message
+	// Bot.sendText(senderID, "Location: " + JSON.stringify(location, null, 4));
+	// Bot.sendText(senderID, "case: " + caseNode);
+	// Bot.sendText(senderID, "messageBody: " + messageBody);
+});
 
 
 // deploy server
@@ -111,9 +111,10 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-// // /webhook for fb and /webhook/localChat/ for local chat
-// app.use('/webhook', Bot.router());
-// // /* for checking if online
+// /webhook for fb and /webhook/localChat/ for local chat
+app.use('/webhook', Bot.router());
+
+// /* for checking if online
 app.get('/', function (req, res) {
 	res.send('WeatherBot is online')
 })
