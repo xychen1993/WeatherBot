@@ -77,7 +77,7 @@ const getCase = require('./nlp.js').getCase;
 const cases = require('./cases.js').loadCases();
 
 const token = "EAALiqKh4YCoBAO1GygPcb7k1sDt7ye1qJR8hJrI6htjwKoZAw5wsRfEJzCqsFNQzSJntPiIN79qZAOEQQgNoZCKiq8HvzmcmgXA8UTxXqEZCZAPMGaH0UtCEAcZAjKWsgzsZBQbLv4t4QfdV5HYv7AhIH7oZCiSruGGvIFeG2WANZAAZDZD";
-const verify_token = "my_voice_is_my_password_verify_me";
+const verify_token = "blahblahblah";
 
 // initialize Bot and define event handlers
 Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
