@@ -84,21 +84,25 @@ Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
+	console.log("received text message from FB");
+
 	// extract some parameters
 	const senderID = event.sender.id;
 	const text = event.message.text;
 
-	// get case
-	var location = getLocation(text);
-	var caseNode = getCase(text);
+	Bot.sendText(senderID, "Ow! Splidao!");
 
-	// perform action
-	messageBody = cases[caseNode].action();
+	// // get case
+	// var location = getLocation(text);
+	// var caseNode = getCase(text);
 
-	// send message
-	Bot.sendText(senderID, "Location: " + JSON.stringify(location, null, 4));
-	Bot.sendText(senderID, "case: " + caseNode);
-	Bot.sendText(senderID, "messageBody: " + messageBody);
+	// // perform action
+	// messageBody = cases[caseNode].action();
+
+	// // send message
+	// Bot.sendText(senderID, "Location: " + JSON.stringify(location, null, 4));
+	// Bot.sendText(senderID, "case: " + caseNode);
+	// Bot.sendText(senderID, "messageBody: " + messageBody);
 });
 
 
