@@ -14,6 +14,15 @@ exports.getLocation = function (myText){
 	return places.out('array')
 }
 
+
+exports.getTime = function (myText){
+	var out = nlp(myText).match('#Date? (now|days|day|week|weeks|hourly|tomorrow)');
+	if (out.length == 0) return 'now'
+	else return out.out('array')
+}
+
+
+
 function getIfContains(myText, keywords){
 	for (var i=0; i<keywords.length; i++){
 		word = keywords[i];
@@ -21,6 +30,8 @@ function getIfContains(myText, keywords){
 	}
 	return false;
 }
+
+
 
 exports.getCase = function (myText){
 	for (var id in cases){
