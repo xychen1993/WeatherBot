@@ -12,6 +12,9 @@ const cases = require('./cases.js').loadCases();
 const token = process.env.PAGE_ACCESS_TOKEN;
 const verify_token = process.env.VERIFY_TOKEN;
 
+userCache = {};
+
+
 
 const PostBackTypes = {
   TELL_JOKE: 'TELL_JOKE',
@@ -25,15 +28,17 @@ Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
-	// extract some parameters
-	const senderID = event.sender.id;
-	const text = event.message.text;
-	console.log("\nreceived text message: " + text);
+  // extract some parameters
+  const senderID = event.sender.id;
+  const text = event.message.text;
+  console.log("\nreceived text message: " + text);
 
-	// Bot.sendText(senderID, "Ow! Splidao!");
+  // Bot.sendText(senderID, "Ow! Splidao!");
 
-	// get case
-	var location = getLocation(text);
+  // get case
+  var location = getLocation(text);
+  if (!location && userCache[senderID]){location = userCache[senderID].location;}
+  if (location){userCache[senderID] = {"location": location}}
 	var time = getTime(text)
 	weatherResponse(time,location,senderID)
 	var caseNode = getCase(text);
