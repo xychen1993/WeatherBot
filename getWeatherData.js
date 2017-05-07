@@ -1,29 +1,6 @@
 http = require('http');
 fs = require('fs');
 
-// exports.getResponse = function(location, time, callback){
-// 	var result = '';
-// 	if(location === -1)
-// 		location = 'Evanston';
-// 	if(time === 'now'){
-// 		currentWeather(location, (data) => {
-// 			result = data;
-// 			console.log('#########');
-// 			console.log(result);
-// 			console.log('#########');
-// 			return result;
-// 		});
-		
-// 		// fs.readFile('test.txt', 'utf8', function (err,data) {
-//   // 			if (err) {
-//   //   			return console.log(err);
-//   // 			}
-//   // 		console.log(data);
-// 		// });
-// 	}
-// 	//return result;
-// }
-
 var apiKey = 'cacdf29dc2be47d484a105606152306'
 
 var options = {
@@ -58,15 +35,15 @@ exports.currentWeather = function(query, callback){
         console.error('Error with the request:', err.message);
         callback(err);
     }).end();
-
 }
 
 exports.forecastWeather = function(query, noOfDays, callback){
-	// query = query.split(" ").join("_");
-	// console.log(query);
 	options.path = '/v1/forecast.json?key=' + apiKey + '&q=' + query + '&days=' + noOfDays;
 	var str = '';
 	var result = '';
+
+	var forecastday = parseInt(noOfDays) - 1;
+
 	http.request(options, (res) => {
 	  res.setEncoding('utf8');
 	  res.on('data', (chunk) => {
@@ -74,11 +51,18 @@ exports.forecastWeather = function(query, noOfDays, callback){
 	  });
 	  res.on('end', (chunk) => {
 	  	forecast = JSON.parse(str);
-	  	// location + date(tomorrow) + average temperature
-	  	result += "The weather in " + forecast.location.name + " of date: " 
-	  			+ forecast.forecast.forecastday[1].date + " will be " + forecast.forecast.forecastday[1].day.avgtemp_c 
-	  			+ " C/" + forecast.forecast.forecastday[1].day.avgtemp_f + " F. It will be \'" + forecast.forecast.forecastday[1].day.condition.text
+	  	if(forecastday == 0){
+	  		result += "The weather in " + forecast.location.name + " of date: " 
+	  			+ forecast.forecast.forecastday[forecastday].date + " is " + forecast.forecast.forecastday[forecastday].day.avgtemp_c 
+	  			+ " C/" + forecast.forecast.forecastday[forecastday].day.avgtemp_f + " F. It is \'" + forecast.forecast.forecastday[forecastday].day.condition.text
 	  			+ "\'.";
+	  	}
+	  	else{
+			result += "The weather in " + forecast.location.name + " of date: " 
+	  			+ forecast.forecast.forecastday[forecastday].date + " will be " + forecast.forecast.forecastday[forecastday].day.avgtemp_c 
+	  			+ " C/" + forecast.forecast.forecastday[forecastday].day.avgtemp_f + " F. It will be \'" + forecast.forecast.forecastday[forecastday].day.condition.text
+	  			+ "\'.";	  	}
+	  	// location + date(tomorrow) + average temperature
 	  	callback(result);
 	  });
 	}).on('error', function(err) {
@@ -93,13 +77,42 @@ errorHandler = function (){
 	console.log('got some error')
 }
 	
-//current weather takes pin code or location as first parameter, error handler callback as second
-//currentWeather('Evanston', errorHandler);
-// forecastWeather('Evanston', '1', errorHandler);
+exports.countDay = function(day){
+	//console.log(day.toString());
+	if(day.toString().includes("next"))
+		console.log(day.toString());
+	var nextDay = 0;
+	switch(day.toString()){
+		case "monday":
+			nextDay = 1;
+			break;
+		case "tuesday":
+			nextDay = 2;
+			break;
+		case "wednesday":
+			nextDay = 3;
+			break;
+		case "thursday":
+			nextDay = 4;
+			break;
+		case "friday":
+			nextDay = 5;
+			break;
+		case "saturday":
+			nextDay = 6;
+			break;
+		case "sunday":
+			nextDay = 7;
+			break;
+	}
+	//console.log(nextDay);
+    var now = new Date(); 
 
+    if(nextDay > now.getDay()){
+    	return nextDay - now.getDay();
+    }
+    else{
+    	return nextDay + 7 - now.getDay();
+    }
+}
 
-//this.getResponse(-1, 'now');
-// current weather: currentWeather(cityName, errorhandler)
-// weather around fixed time point (e.g what's the weather for 10pm): today but in the future
-// whats the weather for tomorrow - 10 days from now : 
-// question for activity:  return condition first 
