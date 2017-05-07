@@ -40,6 +40,7 @@ Bot.on('text', (event) => {
   if (!location && userCache[senderID]){location = userCache[senderID].location;}
   if (location){userCache[senderID] = {"location": location}}
 	var time = getTime(text)
+  Bot.sendText(senderID, time);
 	weatherResponse(time,location,senderID)
 	var caseNode = getCase(text);
 	console.log("message is of case: " + caseNode);
@@ -103,41 +104,45 @@ return server;
 
 
 function weatherResponse(time, location, senderID){
+  var forecastDay = 1;
+  if(time == "now"){
+   forecastDay = 1;
+  }
+  else if(time == "tomorrow"){
+   forecastDay = 2;
+  }
+  else if(time != "tomorrow"){
+   forecastDay = getResponse.countDay(time) +1;
+  }
+  console.log("Forecast of " + forecastDay + " days.");
+
 	if(location === -1){
   	// get the current location
   		if(time == 'now'){
-  			getResponse.currentWeather('Evanston', (data) => {
-  				Bot.sendText(senderID, data);
+        getResponse.forecastWeather('Evanston',forecastDay.toString(),(data) => {
+          //console.log(data);
+          Bot.sendText(senderID, data);
           Bot.sendButtons(
             senderID,
             'Some text',
             [
-              Bot.createPostbackButton('How about tomorrow?', weatherResponse('tomorrow', location, senderID))
-              
+              Bot.createPostbackButton('How about tomorrow?', weatherResponse('tomorrow', location, senderID)) 
             ]);
 
-
-  			});
+        });
   		}
-  		else if(time == 'tomorrow'){ // specific location future weather
-  			getResponse.forecastWeather('Evanston','2',(data) => {
+  		else{ // 'Evanston' future weather
+  			getResponse.forecastWeather('Evanston',forecastDay.toString(),(data) => {
   				//console.log(data);
   				Bot.sendText(senderID, data);
   			});
   		}
   	}
   	else{
-  		if(time == 'now'){ //  specific location current weather
-  			getResponse.currentWeather(location, (data) => {
-  				Bot.sendText(senderID, data);
-  			});
-  		}
-  		else if(time == 'tomorrow'){ // specific location future weather
-  			getResponse.forecastWeather(location,'2',(data) => {
-  			//console.log(data);
-  				Bot.sendText(senderID, data);
-  			});
-  		}
+       getResponse.forecastWeather(location,forecastDay.toString(),(data) => {
+       //console.log(data);
+         Bot.sendText(senderID, data);
+       });
   	}
 }
 
