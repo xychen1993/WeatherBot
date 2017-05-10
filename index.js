@@ -14,69 +14,59 @@ const verify_token = process.env.VERIFY_TOKEN;
 
 userCache = {};
 
-
-
-const PostBackTypes = {
-  TELL_JOKE: 'TELL_JOKE',
-  TELL_ANOTHER_JOKE: 'TELL_ANOTHER_JOKE',
-};
-
-
-
 // initialize Bot and define event handlers
-Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
+Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
-  // extract some parameters
-  const senderID = event.sender.id;
-  const text = event.message.text;
-  console.log("\nreceived text message: " + text);
+    // extract some parameters
+    const senderID = event.sender.id;
+    const text = event.message.text;
+    console.log("\nreceived text message: " + text);
 
-  // Bot.sendText(senderID, "Ow! Splidao!");
+    // Bot.sendText(senderID, "Ow! Splidao!");
 
-  // get case
-  var location = getLocation(text);
-  if (!location && userCache[senderID]){location = userCache[senderID].location;}
-  if (location){userCache[senderID] = {"location": location}}
-	var time = getTime(text)
-  Bot.sendText(senderID, time);
-	weatherResponse(time,location,senderID)
-	var caseNode = getCase(text);
-	console.log("message is of case: " + caseNode);
+    // get case
+    var location = getLocation(text);
+    if (!location && userCache[senderID]){location = userCache[senderID].location;}
+    if (location){userCache[senderID] = {"location": location}}
+    var time = getTime(text)
+    Bot.sendText(senderID, time);
+    weatherResponse(time,location,senderID)
+    var caseNode = getCase(text);
+    console.log("message is of case: " + caseNode);
 
-	// perform action
-	messageBody = cases[caseNode].action({
-		location: location
-	});
+    // perform action
+    messageBody = cases[caseNode].action({
+        location: location
+    });
 
-	// send message
-	console.log("sending message: " + messageBody);
-	Bot.sendText(senderID, messageBody);
+    // send message
+    console.log("sending message: " + messageBody);
+    Bot.sendText(senderID, messageBody);
 });
 
 Bot.on('postback', event => {
-    const senderID = event.sender.id;
-    console.log("event is ", event)
-    console.log("payload is ", event.postback.payload)
-    switch(event.postback.payload) {
-      case PostBackTypes.TELL_JOKE:
-        Bot.sendText(senderID, JOKE);
-        Bot.sendButtons(
-          senderID,
-          'Ha. Ha. Ha. What else may I do for you?',
-          [Bot.createPostbackButton('Tell me another joke', PostBackTypes.TELL_ANOTHER_JOKE)]
-        );
-        break;
-      case PostBackTypes.TELL_ANOTHER_JOKE:
-        Bot.sendText(senderID, 'Sorry, I only know one joke');
-        break;
+    console.log("RECEIVED POSTBACK");
+    console.log("event.postback.payload: \n" + JSON.stringify(event.postback.payload, null, 4));
+    // const senderID = event.sender.id;
+    // console.log("event is ", event)
+    // console.log("payload is ", event.postback.payload)
+    // switch(event.postback.payload) {
+    // case PostBackTypes.TELL_JOKE:
+    // Bot.sendText(senderID, JOKE);
+    // Bot.sendButtons(
+    // senderID,
+    // 'Ha. Ha. Ha. What else may I do for you?',
+    // [Bot.createPostbackButton('Tell me another joke', PostBackTypes.TELL_ANOTHER_JOKE)]
+    // );
+    // break;
+    // case PostBackTypes.TELL_ANOTHER_JOKE:
+    // Bot.sendText(senderID, 'Sorry, I only know one joke');
+    // break;
 
-    }
-  });
-
-
-
+    // }
+});
 
 // deploy server
 const app = express();
@@ -101,48 +91,45 @@ var server = app.listen((process.env.PORT || 5000), (err)=>{
 });
 return server;
 
-
-
 function weatherResponse(time, location, senderID){
-  var forecastDay = 1;
-  if(time == "now"){
-   forecastDay = 1;
-  }
-  else if(time == "tomorrow"){
-   forecastDay = 2;
-  }
-  else if(time != "tomorrow"){
-   forecastDay = getResponse.countDay(time) +1;
-  }
-  console.log("Forecast of " + forecastDay + " days.");
+    var forecastDay = 1;
+    if(time == "now"){
+        forecastDay = 1;
+    }
+    else if(time == "tomorrow"){
+        forecastDay = 2;
+    }
+    else if(time != "tomorrow"){
+        forecastDay = getResponse.countDay(time) +1;
+    }
+    console.log("Forecast of " + forecastDay + " days.");
 
-	if(location === -1){
-  	// get the current location
-  		if(time == 'now'){
-        getResponse.forecastWeather('Evanston',forecastDay.toString(),(data) => {
-          //console.log(data);
-          Bot.sendText(senderID, data);
-          Bot.sendButtons(
-            senderID,
-            'Some text',
-            [
-              Bot.createPostbackButton('How about tomorrow?', weatherResponse('tomorrow', location, senderID)) 
-            ]);
-
+    if (location === -1){
+        // get the current location
+        if (time == 'now'){
+            getResponse.forecastWeather('Evanston',forecastDay.toString(),(data) => {
+                //console.log(data);
+                Bot.sendText(senderID, data);
+                Bot.sendButtons(
+                    senderID,
+                    'Some text',
+                    [
+                        Bot.createPostbackButton('How about tomorrow?', weatherResponse('tomorrow', location, senderID)) 
+                    ]);
+            });
+        }
+        else { // 'Evanston' future weather
+            getResponse.forecastWeather('Evanston',forecastDay.toString(),(data) => {
+                //console.log(data);
+                Bot.sendText(senderID, data);
+            });
+        }
+    }
+    else{
+        getResponse.forecastWeather(location,forecastDay.toString(),(data) => {
+            //console.log(data);
+            Bot.sendText(senderID, data);
         });
-  		}
-  		else{ // 'Evanston' future weather
-  			getResponse.forecastWeather('Evanston',forecastDay.toString(),(data) => {
-  				//console.log(data);
-  				Bot.sendText(senderID, data);
-  			});
-  		}
-  	}
-  	else{
-       getResponse.forecastWeather(location,forecastDay.toString(),(data) => {
-       //console.log(data);
-         Bot.sendText(senderID, data);
-       });
-  	}
+    }
 }
 
