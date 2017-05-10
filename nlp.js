@@ -1,6 +1,5 @@
 var nlp = require('compromise')
 const readline = require('readline')
-const cases = require('./cases.js').loadCases();
 
 exports.getLocation = function (myText){
 	var lexicon = {
@@ -17,16 +16,9 @@ exports.getLocation = function (myText){
 
 exports.getTime = function (myText){
 	var out = nlp(myText).match('#Date? (now|days|day|week|weeks|hourly|tomorrow|tuesday|monday|wednesday|thursday|friday|saturday|sunday)');
-	// var re = new RegExp('[0-9]*[ap]m');
-	// console.log(myText);
-	// //r = nlp('its kind of a funny story');
-	// var r = myText.toString();
-	// console.log("Found " + r.match(re));
-	// //console.log(out.out('array'));
 	if (out.length == 0) return 'now'
 	else return out.out('array')
 }
-
 
 
 function getIfContains(myText, keywords){
@@ -36,52 +28,4 @@ function getIfContains(myText, keywords){
 	}
 	return false;
 }
-
-
-
-exports.getCase = function (myText){
-	for (var id in cases){
-		thisCase = cases[id];
-		if (getIfContains(myText, thisCase.keywords)){
-			return id;
-		}
-	}
-	return "DEFAULT";
-
-// 	var out = nlp(myText).match('#Date? ("pm|am|hour|hourly|hours")');
-
-
-// 	if (out.length == 0) return 'now'
-// 	else return out.out('array')
-
-// 	let 
-
-// 	"now"
-// 	"hourly"
-// 	"daily"
-// 	-1
-
-
-// "pm|am|hour|hourly|hours"
-
-// today
-
-}
-
-/*
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-rl.question('What is your question? \n', (answer) => {
-  // TODO: Log the answer in a database
-  var locations = getLocation(answer)
-  var time = getTime(answer)
-  console.log(`Location: ${locations}`)
-  console.log(`Node: ${time}`)
-  rl.close()
-})
-*/
-
-
+	

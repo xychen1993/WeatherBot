@@ -24,10 +24,23 @@ exports.currentWeather = function(query, callback){
 	  });
 	  res.on('end', (chunk) => {
 	  	current = JSON.parse(str);
+	  	result = {
+            location: current.location.name,
+            date: "NOW",
+            temp_f: current.current.temp_f,
+            temp_c: current.current.temp_c,
+            feelslike_f: current.current.feelslike_f,
+            feelslike_c: current.current.feelslike_c,
+            condition: current.current.condition.text,
+            forecastday: -1
+        }
+
+
+
 	  	//console.log("The weather now in " + current.location.name +" is: "+ current.current.temp_c + " C/ " + current.current.temp_f + " F.");
-	  	result += "The weather now in " + current.location.name +" is: "+ current.current.temp_c + " C/ " 
-	  				+ current.current.temp_f + " F. It is \'" + current.current.condition.text + "\'. Real feel: " 
-	  				+ current.current.feelslike_c + " C/ " + current.current.feelslike_f + "F."
+	  	// result += "The weather now in " + current.location.name +" is: "+ current.current.temp_c + " C/ " 
+	  	// 			+ current.current.temp_f + " F. It is \'" + current.current.condition.text + "\'. Real feel: " 
+	  	// 			+ current.current.feelslike_c + " C/ " + current.current.feelslike_f + "F."
 	  	callback(result);
 	  });
 	}).on('error', function(err) {
@@ -51,17 +64,27 @@ exports.forecastWeather = function(query, noOfDays, callback){
 	  });
 	  res.on('end', (chunk) => {
 	  	forecast = JSON.parse(str);
-	  	if(forecastday == 0){
-	  		result += "The weather in " + forecast.location.name + " of date: " 
-	  			+ forecast.forecast.forecastday[forecastday].date + " is " + forecast.forecast.forecastday[forecastday].day.avgtemp_c 
-	  			+ " C/" + forecast.forecast.forecastday[forecastday].day.avgtemp_f + " F. It is \'" + forecast.forecast.forecastday[forecastday].day.condition.text
-	  			+ "\'.";
-	  	}
-	  	else{
-			result += "The weather in " + forecast.location.name + " of date: " 
-	  			+ forecast.forecast.forecastday[forecastday].date + " will be " + forecast.forecast.forecastday[forecastday].day.avgtemp_c 
-	  			+ " C/" + forecast.forecast.forecastday[forecastday].day.avgtemp_f + " F. It will be \'" + forecast.forecast.forecastday[forecastday].day.condition.text
-	  			+ "\'.";	  	}
+
+	  	result = {
+            location: forecast.location.name,
+            date: forecast.forecast.forecastday[forecastday].date,
+            temp_f: forecast.forecast.forecastday[forecastday].day.avgtemp_f,
+            temp_c: forecast.forecast.forecastday[forecastday].day.avgtemp_c,
+            condition: forecast.forecast.forecastday[forecastday].day.condition.text,
+            forecastday: forecastday
+        }
+
+	  // 	if(forecastday == 0){
+	  // 		result += "The weather in " + forecast.location.name + " of date: " 
+	  // 			+ forecast.forecast.forecastday[forecastday].date + " is " + forecast.forecast.forecastday[forecastday].day.avgtemp_c 
+	  // 			+ " C/" + forecast.forecast.forecastday[forecastday].day.avgtemp_f + " F. It is \'" + forecast.forecast.forecastday[forecastday].day.condition.text
+	  // 			+ "\'.";
+	  // 	}
+	  // 	else{
+			// result += "The weather in " + forecast.location.name + " of date: " 
+	  // 			+ forecast.forecast.forecastday[forecastday].date + " will be " + forecast.forecast.forecastday[forecastday].day.avgtemp_c 
+	  // 			+ " C/" + forecast.forecast.forecastday[forecastday].day.avgtemp_f + " F. It will be \'" + forecast.forecast.forecastday[forecastday].day.condition.text
+	  // 			+ "\'.";	  	}
 	  	// location + date(tomorrow) + average temperature
 	  	callback(result);
 	  });
@@ -71,7 +94,6 @@ exports.forecastWeather = function(query, noOfDays, callback){
         callback(err);
     }).end();
 }
-
 
 errorHandler = function (){
 	console.log('got some error')

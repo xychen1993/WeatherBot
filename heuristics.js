@@ -1,28 +1,3 @@
-cases = {
-	"hourly": {
-		"keywords": ["pm", "am", "hour", "hourly", "hours"], 
-		"action": function(input){
-			location = input.location;
-			return "hourly message for " + location;
-		}
-	},
-	"daily": {
-		"keywords": ["tomorrow", "week", "days", "day"],
-		"action": function(input){
-			location = input.location;
-			return "daily message for " + location;
-		}
-	},
-	"DEFAULT": {
-		"keywords": [],
-		"action": function(input){
-			return "Sorry, I didn't catch that";
-		}
-	}
-}
-
-exports.loadCases = function (){return cases}
-
 // all_weather_conditions
 // [
 // 		"sunny",
@@ -1334,6 +1309,12 @@ activities = {
             "cold": true
         }
     }
+}
+
+exports.applyActivityMessage = function (query, weatherJSON){
+    // returns empty string if none applicable
+    // returns reason not to if something applies
+    return("Don't do it...remain indoors!");
 }
 
 exports.loadActivities = function(){return activities}
