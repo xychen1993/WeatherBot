@@ -11,10 +11,14 @@ var options = {
 };
 
 exports.currentWeather = function(query, callback){
-	// var location = query;
-	// location = location.replace(/\s+/g, '_');
-	// console.log(query);
-	options.path = '/v1/current.json?key=' + apiKey + '&q=' + query;
+	var newQuery = "";
+	if(query.toString().indexOf(' ') >= 0){
+		var arr = query.toString().split(' ');
+		newQuery = arr[0] + '_' + arr[1];
+	}
+	else
+		newQuery = query;
+	options.path = '/v1/current.json?key=' + apiKey + '&q=' + newQuery;
 	var str = '';
 	var result = '';
 	http.request(options, (res) => {
@@ -51,7 +55,14 @@ exports.currentWeather = function(query, callback){
 }
 
 exports.forecastWeather = function(query, noOfDays, callback){
-	options.path = '/v1/forecast.json?key=' + apiKey + '&q=' + query + '&days=' + noOfDays;
+	var newQuery = "";
+	if(query.toString().indexOf(' ') >= 0){
+		var arr = query.toString().split(' ');
+		newQuery = arr[0] + '_' + arr[1];
+	}
+	else
+		newQuery = query;
+	options.path = '/v1/forecast.json?key=' + apiKey + '&q=' + newQuery + '&days=' + noOfDays;
 	var str = '';
 	var result = '';
 
