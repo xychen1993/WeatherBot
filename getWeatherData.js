@@ -112,8 +112,10 @@ errorHandler = function (){
 	
 exports.countDay = function(day){
 	//console.log(day.toString());
-	if(day.toString().includes("next"))
-		console.log(day.toString());
+	if(day.toString().includes("next")){
+		var str = day.toString().split(" ");
+		day = str[1];
+	}
 	var nextDay = 0;
 	switch(day.toString()){
 		case "monday":
