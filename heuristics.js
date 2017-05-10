@@ -1308,13 +1308,87 @@ activities = {
             "hot": false,
             "cold": true
         }
-    }
+    },
+    "badthing": {
+        "temp_range_low": 1000,
+        "temp_range_high": 1001,
+        "agnostic_weather_conditions": {
+            "sunny": true,
+            "cloudy": true,
+            "windy": true,
+            "rainy": true,
+            "stormy": true,
+            "foggy": true,
+            "snowy": true,
+            "lightning": true,
+            "hail": true,
+            "tornado": true,
+            "hurricane": true,
+            "flood": true,
+            "tsunami": true,
+            "fire": true,
+            "rainbow": true,
+            "hot": true,
+            "cold": true
+        }
+    },
 }
 
 exports.applyActivityMessage = function (query, weatherJSON){
     // returns empty string if none applicable
     // returns reason not to if something applies
-    return("Don't do it...remain indoors!");
+    query = query.toUpperCase();
+    message = "";
+    relevant_activities = [];
+    for (var activity in activities) {
+        if (activities.hasOwnProperty(activity)) {
+            if (query.includes(activity.toUpperCase())){
+                relevant_activities.push(activity);
+            }
+        }
+    }
+
+    console.log("found " + String(relevant_activities.length) + " activities");
+    console.log(JSON.stringify(relevant_activities));
+
+    for (var i=0; i<relevant_activities.length; i++){
+        shouldGo = true;
+        activity = relevant_activities[i];
+        info = activities[activity];
+
+        console.log("weatherJSON.temp_f: ", weatherJSON.temp_f)
+        console.log("info.temp_range_low: ", info.temp_range_low)
+        console.log("info.temp_range_high: ", info.temp_range_high)
+
+        if (Number(weatherJSON.temp_f) < info.temp_range_low){
+            message += " (it will be too cold)"
+            shouldGo = false;
+        } else if (Number(weatherJSON.temp_f) > info.temp_range_high){
+            message += " (it will be too hot)"
+            shouldGo = false;
+        }
+
+        for (condition in info.agnostic_weather_conditions){
+            if (info.agnostic_weather_conditions.hasOwnProperty(condition)) {
+                if (info.agnostic_weather_conditions[condition]){
+                    if (weatherJSON.condition.toUpperCase().includes(condition.toUpperCase())){
+                        message += " (it is " + condition + ")";
+                        shouldGo = false;
+                    }
+                }
+            }
+        }
+
+        if (!shouldGo){
+            message = "It may not be good weather for " + activity + "," + message
+        }
+    }
+
+    if (message !== ""){
+        message += "."
+    }
+
+    return(message);
 }
 
 exports.loadActivities = function(){return activities}
