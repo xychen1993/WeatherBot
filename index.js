@@ -153,6 +153,7 @@ var server = app.listen((process.env.PORT || 5000), (err)=>{
 return server;
 
 function bbseddit(text, senderID){
+    text = text.toUpperCase();
     matches = [
         "do you get what I'm saying here",
         "namsayin",
@@ -161,7 +162,7 @@ function bbseddit(text, senderID){
     ];
     responses = ["no", "not really", "uhh"];
     for (var i=0; i<matches.length; i++){
-        if (text === matches[i]){
+        if (text.includes(matches[i].toUpperCase())){
             Bot.sendText(senderID, responses[Math.floor(Math.random() * responses.length)]);
             return true;    
         }
