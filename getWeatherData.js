@@ -84,19 +84,6 @@ exports.forecastWeather = function(query, noOfDays, callback){
             condition: forecast.forecast.forecastday[forecastday].day.condition.text,
             forecastday: forecastday
         }
-
-	  // 	if(forecastday == 0){
-	  // 		result += "The weather in " + forecast.location.name + " of date: " 
-	  // 			+ forecast.forecast.forecastday[forecastday].date + " is " + forecast.forecast.forecastday[forecastday].day.avgtemp_c 
-	  // 			+ " C/" + forecast.forecast.forecastday[forecastday].day.avgtemp_f + " F. It is \'" + forecast.forecast.forecastday[forecastday].day.condition.text
-	  // 			+ "\'.";
-	  // 	}
-	  // 	else{
-			// result += "The weather in " + forecast.location.name + " of date: " 
-	  // 			+ forecast.forecast.forecastday[forecastday].date + " will be " + forecast.forecast.forecastday[forecastday].day.avgtemp_c 
-	  // 			+ " C/" + forecast.forecast.forecastday[forecastday].day.avgtemp_f + " F. It will be \'" + forecast.forecast.forecastday[forecastday].day.condition.text
-	  // 			+ "\'.";	  	}
-	  	// location + date(tomorrow) + average temperature
 	  	callback(result);
 	  });
 	}).on('error', function(err) {
@@ -105,6 +92,63 @@ exports.forecastWeather = function(query, noOfDays, callback){
         callback(err);
     }).end();
 }
+
+exports.forecastHourlyWeather = function(hour, query, noOfDays, callback){
+	// Find the hour
+	var reg = /[0-9]+/gi;
+	var regex = /[ap]m/gi;
+	var am_pm = hour.toString().match(regex);
+	var forecasthour = "";
+	if(am_pm == "am")
+		forecasthour = parseInt(hour.toString().match(reg));
+	else
+		forecasthour = parseInt(hour.toString().match(reg)) + 12;
+	// Handle multi-word city names
+	var newQuery = "";
+	if(query.toString().indexOf(' ') >= 0){
+		var arr = query.toString().split(' ');
+		newQuery = arr[0] + '_' + arr[1];
+	}
+	else
+		newQuery = query;
+
+	options.path = '/v1/forecast.json?key=' + apiKey + '&q=' + newQuery + '&days=' + noOfDays;
+	var str = '';
+	var result = '';
+
+	var forecastday = parseInt(noOfDays) - 1;
+
+	http.request(options, (res) => {
+	  res.setEncoding('utf8');
+	  res.on('data', (chunk) => {
+	  	str += chunk;
+	  });
+	  res.on('end', (chunk) => {
+	  	forecast = JSON.parse(str);
+
+	  	var date_n_time = forecast.forecast.forecastday[forecastday].hour[forecasthour].time;
+
+
+	  	result = {
+            location: forecast.location.name,
+            date: date_n_time.toString().split(" ")[0],
+            time: date_n_time.toString().split(" ")[1],
+            temp_c: forecast.forecast.forecastday[forecastday].hour[forecasthour].temp_c,
+            temp_f: forecast.forecast.forecastday[forecastday].hour[forecasthour].temp_f,
+            condition: forecast.forecast.forecastday[forecastday].hour[forecasthour].condition.text,
+            forecastday: forecastday,
+            forecasthour: forecasthour
+        }
+	  	callback(result);
+	  });
+	}).on('error', function(err) {
+        // handle errors with the request itself
+        console.error('Error with the request:', err.message);
+        callback(err);
+    }).end();
+}
+
+
 
 errorHandler = function (){
 	console.log('got some error')

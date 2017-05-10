@@ -16,8 +16,29 @@ exports.getLocation = function (myText){
 
 exports.getTime = function (myText){
 	var out = nlp(myText).match('#Date? (now|days|day|week|weeks|hourly|tomorrow|tuesday|monday|wednesday|thursday|friday|saturday|sunday)');
-	if (out.length == 0) return 'now'
-	else return out.out('array')
+	
+	var reg = /[0-9]+(\s)*[ap]m/gi;
+	var r = myText.toString();
+	var hourly = r.match(reg);
+	//console.log("Found " + r.match(reg));
+	var time = "";
+
+	if(out.length == 0){
+		time = {
+			day: 'now',
+			hour: hourly
+		}
+	}
+	else{
+		time = {
+			day: out.out('array'),
+			hour: hourly
+		}
+	}
+	return time
+
+	// if (out.length == 0) return 'now'
+	// else return out.out('array')
 }
 
 

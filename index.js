@@ -87,7 +87,13 @@ function weatherMessage(weatherJSON){
         message = "The weather now in " + weatherJSON.location + " is " + weatherJSON.temp_c + " C/ " 
                 + weatherJSON.temp_f + " F. It is \'" + weatherJSON.condition + "\'. Real feel: " 
                 + weatherJSON.feelslike_c + " C/ " + weatherJSON.feelslike_f + "F.";
-    } else {
+    } else if(weatherJSON.forecasthour){
+        equalityWord = (weatherJSON.forecastday === 0) ? "is" : "will be";
+        message = "The weather in " + weatherJSON.location + " of date: " + weatherJSON.date + " at " + weatherJSON.time + " " 
+                + equalityWord + " " + weatherJSON.temp_c + " C/" + weatherJSON.temp_f + " F. It "
+                + equalityWord + " \'" + weatherJSON.condition + "\'.";
+    }
+    else {
         equalityWord = (weatherJSON.forecastday === 0) ? "is" : "will be";
         message = "The weather in " + weatherJSON.location + " of date: " + weatherJSON.date + " "
                 + equalityWord + " " + weatherJSON.temp_c + " C/" + weatherJSON.temp_f + " F. It "
@@ -98,20 +104,40 @@ function weatherMessage(weatherJSON){
 }
 
 function weatherResponse(time, location, senderID, callback){
-    forecastDay = getForecastDay(time);
+    forecastDay = getForecastDay(time.day);
     console.log("Forecast of " + forecastDay + " days.");
-    // location === -1 case is handled at Bot.on("text") scope
-    if (forecastDay === 1){
-        getResponse.currentWeather(location, (weatherJSON) => {
-            console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
-            callback(weatherJSON);
-        });
-    } else {
-        getResponse.forecastWeather(location,forecastDay.toString(), (weatherJSON) => {
-            console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
-            callback(weatherJSON);
-        });
+    if(time.hour){
+        getResponse.forecastHourlyWeather(time.hour, location,forecastDay.toString(), (weatherJSON) => {
+                console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
+                callback(weatherJSON);
+            });
     }
+    else{
+         // location === -1 case is handled at Bot.on("text") scope
+        if (forecastDay === 1){
+            getResponse.currentWeather(location, (weatherJSON) => {
+                console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
+                callback(weatherJSON);
+            });
+        } else {
+            getResponse.forecastWeather(location,forecastDay.toString(), (weatherJSON) => {
+                console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
+                callback(weatherJSON);
+            });
+        }
+    }       
+    // // location === -1 case is handled at Bot.on("text") scope
+    // if (forecastDay === 1){
+    //     getResponse.currentWeather(location, (weatherJSON) => {
+    //         console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
+    //         callback(weatherJSON);
+    //     });
+    // } else {
+    //     getResponse.forecastWeather(location,forecastDay.toString(), (weatherJSON) => {
+    //         console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
+    //         callback(weatherJSON);
+    //     });
+    // }
 
     // functions ------------------------------
     function getForecastDay(time){
