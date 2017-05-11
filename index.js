@@ -54,7 +54,7 @@ Bot.on('text', (event) => {
 function sendTemplateMessage(senderID, image, message){
     Bot.sendGenericTemplate(senderID, [
         {
-            "title": "WEATHERBOT WOOOOO"
+            "title": "WEATHERBOT WOOOOO",
             "image_url": image,
             "subtitle": message,
             "default_action": {
