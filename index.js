@@ -20,6 +20,9 @@ Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
+
+
+
     // extract some parameters
     const senderID = event.sender.id;
     const text = event.message.text;
@@ -60,7 +63,7 @@ function sendTemplateMessage(senderID, image, message){
             "default_action": {
                 "type": "web_url",
                 "url": "https://peterssendreceiveapp.ngrok.io/view?item=103",
-                "messenger_extensions": true,
+                "messenger_extensions": false,
                 "webview_height_ratio": "tall",
                 "fallback_url": "https://peterssendreceiveapp.ngrok.io/"
             },
