@@ -67,12 +67,12 @@ function sendTemplateMessage(senderID, image, message){
             "buttons":[
                 {
                     "type":"postback",
-                    "payload":"What about tomorrow?",
-                    "title":"What about tomorrow?"
+                    "title":"What about tomorrow?",
+                    "payload":"tomorrow"
                 },{
                     "type":"postback",
                     "title":"How about next week?",
-                    "payload":"How about next week?"
+                    "payload":"nextweek"
                 }              
             ]      
         }
