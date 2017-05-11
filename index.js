@@ -16,7 +16,7 @@ locationCache = {};
 activityCache = {};
 
 // initialize Bot and define event handlers
-Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
+Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
@@ -30,9 +30,9 @@ Bot.on('text', (event) => {
     // get case
     var location = getLocation(text);
     console.log("location (pre-cache): " + location);
-    if (!location && locationCache[senderID]){location = locationCache[senderID].location;} // read from cache
-    if (location){locationCache[senderID] = {"location": location}}                     // write to cache
-    if (location == -1){location = "Evanston"}                                      // default to Evanston
+    if (!location && locationCache[senderID]){location = locationCache[senderID].location;}     // read from cache
+    if (location){locationCache[senderID] = {"location": location}}                             // write to cache
+    if (location == -1){location = "Evanston"}                                                  // default to Evanston
     console.log("location (post-cache): " + location);
 
     var time = getTime(text)
@@ -44,9 +44,32 @@ Bot.on('text', (event) => {
         activityMessageText = heuristics.applyActivityMessage(text, activityCache, senderID, weatherJSON);      // if suitable for activities
         weatherMessageText = weatherMessage(weatherJSON);                               // general report
         message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
-        Bot.sendText(senderID, message);
+        
+        // Bot.sendText(senderID, message);
+        // Bot.sendImage(senderID, "https://scontent-ort2-1.xx.fbcdn.net/v/t1.0-9/17884015_1320605161368948_2071637162927692074_n.jpg?oh=ee42c6fb4098c1ef146b43eac1a9e6ef&oe=597EEFFC");
+        sendTemplateMessage(senderID, "https://scontent-ort2-1.xx.fbcdn.net/v/t1.0-9/17884015_1320605161368948_2071637162927692074_n.jpg?oh=ee42c6fb4098c1ef146b43eac1a9e6ef&oe=597EEFFC", message);
     })
 });
+
+function sendTemplateMessage(senderID, image, message){
+    Bot.sendGenericTemplate(senderID, [
+        {
+            "image_url": image,
+            "subtitle": message,
+            "buttons":[
+                {
+                    "type":"postback",
+                    "payload":"What about tomorrow?",
+                    "title":"What about tomorrow?"
+                },{
+                    "type":"postback",
+                    "title":"How about next week?",
+                    "payload":"How about next week?"
+                }              
+            ]      
+        }
+    ]);
+}
 
 Bot.on('postback', event => {
     console.log("RECEIVED POSTBACK");
@@ -89,7 +112,7 @@ function weatherMessage(weatherJSON){
         message = "The weather now in " + weatherJSON.location + " is " + weatherJSON.temp_c + " C/ " 
                 + weatherJSON.temp_f + " F. It is \'" + weatherJSON.condition + "\'. Real feel: " 
                 + weatherJSON.feelslike_c + " C/ " + weatherJSON.feelslike_f + "F.";
-    } else if(weatherJSON.forecasthour){
+    } else if (weatherJSON.forecasthour){
         equalityWord = (weatherJSON.forecastday === 0) ? "is" : "will be";
         message = "The weather in " + weatherJSON.location + " of date: " + weatherJSON.date + " at " + weatherJSON.time + " " 
                 + equalityWord + " " + weatherJSON.temp_c + " C/" + weatherJSON.temp_f + " F. It "
@@ -108,12 +131,13 @@ function weatherMessage(weatherJSON){
 function weatherResponse(time, location, senderID, callback){
     forecastDay = getForecastDay(time.day);
     console.log("Forecast of " + forecastDay + " days.");
-    if(time.hour){
+
+    if (time.hour){
         getResponse.forecastHourlyWeather(time.hour, location,forecastDay.toString(), (weatherJSON) => {
             console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
             callback(weatherJSON);
         });
-    } else{
+    } else {
         // location === -1 case is handled at Bot.on("text") scope
         if (forecastDay === 1){
             getResponse.currentWeather(location, (weatherJSON) => {
@@ -127,6 +151,8 @@ function weatherResponse(time, location, senderID, callback){
             });
         }
     }       
+
+
     // // location === -1 case is handled at Bot.on("text") scope
     // if (forecastDay === 1){
     //     getResponse.currentWeather(location, (weatherJSON) => {
