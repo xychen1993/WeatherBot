@@ -54,8 +54,16 @@ Bot.on('text', (event) => {
 function sendTemplateMessage(senderID, image, message){
     Bot.sendGenericTemplate(senderID, [
         {
+            "title": "WEATHERBOT WOOOOO"
             "image_url": image,
             "subtitle": message,
+            "default_action": {
+                "type": "web_url",
+                "url": "agar.io",
+                "messenger_extensions": true,
+                "webview_height_ratio": "tall",
+                "fallback_url": "agar.io"
+            },
             "buttons":[
                 {
                     "type":"postback",
