@@ -59,10 +59,10 @@ function sendTemplateMessage(senderID, image, message){
             "subtitle": message,
             "default_action": {
                 "type": "web_url",
-                "url": "agar.io",
+                "url": "https://www.facebook.com",
                 "messenger_extensions": false,
                 "webview_height_ratio": "tall",
-                "fallback_url": "agar.io"
+                "fallback_url": "https://www.facebook.com"
             },
             "buttons":[
                 {
