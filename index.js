@@ -12,10 +12,11 @@ const heuristics = require('./heuristics.js');
 const token = process.env.PAGE_ACCESS_TOKEN;
 const verify_token = process.env.VERIFY_TOKEN;
 
-userCache = {};
+locationCache = {};
+activityCache = {};
 
 // initialize Bot and define event handlers
-Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
+Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
@@ -29,8 +30,8 @@ Bot.on('text', (event) => {
     // get case
     var location = getLocation(text);
     console.log("location (pre-cache): " + location);
-    if (!location && userCache[senderID]){location = userCache[senderID].location;} // read from cache
-    if (location){userCache[senderID] = {"location": location}}                     // write to cache
+    if (!location && locationCache[senderID]){location = locationCache[senderID].location;} // read from cache
+    if (location){locationCache[senderID] = {"location": location}}                     // write to cache
     if (location == -1){location = "Evanston"}                                      // default to Evanston
     console.log("location (post-cache): " + location);
 
@@ -39,7 +40,8 @@ Bot.on('text', (event) => {
     // get weather information
     weatherResponse(time, location, senderID, (weatherJSON) => {
         // use weather information to compose message
-        activityMessageText = heuristics.applyActivityMessage(text,  weatherJSON);      // if suitable for activities
+        activityCache = heuristics.setActivityCache(text, senderID, activityCache);
+        activityMessageText = heuristics.applyActivityMessage(text, activityCache, senderID, weatherJSON);      // if suitable for activities
         weatherMessageText = weatherMessage(weatherJSON);                               // general report
         message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
         Bot.sendText(senderID, message);
@@ -108,12 +110,11 @@ function weatherResponse(time, location, senderID, callback){
     console.log("Forecast of " + forecastDay + " days.");
     if(time.hour){
         getResponse.forecastHourlyWeather(time.hour, location,forecastDay.toString(), (weatherJSON) => {
-                console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
-                callback(weatherJSON);
-            });
-    }
-    else{
-         // location === -1 case is handled at Bot.on("text") scope
+            console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
+            callback(weatherJSON);
+        });
+    } else{
+        // location === -1 case is handled at Bot.on("text") scope
         if (forecastDay === 1){
             getResponse.currentWeather(location, (weatherJSON) => {
                 console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
