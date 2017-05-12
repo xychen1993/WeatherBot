@@ -1,6 +1,14 @@
 var nlp = require('compromise')
 const readline = require('readline')
 
+exports.getDisasterKeyword = function(myText){
+	if (myText.toLowerCase().includes('disaster')){
+		return true;
+	}else {
+		return false;
+	}
+}
+
 exports.getLocation = function (myText){
 	var lexicon = {
 	  'Evanston':'Place'
@@ -40,7 +48,6 @@ exports.getTime = function (myText){
 	// if (out.length == 0) return 'now'
 	// else return out.out('array')
 }
-
 
 function getIfContains(myText, keywords){
 	for (var i=0; i<keywords.length; i++){

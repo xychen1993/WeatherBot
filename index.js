@@ -5,24 +5,21 @@ const Promise = require('bluebird');
 const getLocation = require('./nlp.js').getLocation;
 const getCase = require('./nlp.js').getCase;
 const getTime = require('./nlp.js').getTime;
+const getDisasterKeyword = require('./nlp.js').getDisasterKeyword;
 const getResponse = require('./getWeatherData.js');
-
+const getDisaster = require('./disaster.js').getDisaster;
 const heuristics = require('./heuristics.js');
 
 const token = process.env.PAGE_ACCESS_TOKEN;
 const verify_token = process.env.VERIFY_TOKEN;
 
-locationCache = {};
-activityCache = {};
+userCache = {};
 
 // initialize Bot and define event handlers
 Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
-
-
-
     // extract some parameters
     const senderID = event.sender.id;
     const text = event.message.text;
@@ -33,61 +30,43 @@ Bot.on('text', (event) => {
     // get case
     var location = getLocation(text);
     console.log("location (pre-cache): " + location);
-    if (!location && locationCache[senderID]){location = locationCache[senderID].location;}     // read from cache
-    if (location){locationCache[senderID] = {"location": location}}                             // write to cache
-    if (location == -1){location = "Evanston"}                                                  // default to Evanston
+    if (!location && userCache[senderID]){location = userCache[senderID].location;} // read from cache
+    if (location){userCache[senderID] = {"location": location}}                     // write to cache
+    if (location == -1){location = "Evanston"}                                      // default to Evanston
     console.log("location (post-cache): " + location);
 
     var time = getTime(text)
+    var disasterKeyword = getDisasterKeyword(text)
 
-    // get weather information
-    weatherResponse(time, location, senderID, (weatherJSON) => {
-        // use weather information to compose message
-        activityCache = heuristics.setActivityCache(text, senderID, activityCache);
-        activityMessageText = heuristics.applyActivityMessage(text, activityCache, senderID, weatherJSON);      // if suitable for activities
-        weatherMessageText = weatherMessage(weatherJSON);                               // general report
-        message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
-        
-        // Bot.sendText(senderID, message);
-        // Bot.sendImage(senderID, "https://scontent-ort2-1.xx.fbcdn.net/v/t1.0-9/17884015_1320605161368948_2071637162927692074_n.jpg?oh=ee42c6fb4098c1ef146b43eac1a9e6ef&oe=597EEFFC");
-        sendTemplateMessage(senderID, "https://scontent-ort2-1.xx.fbcdn.net/v/t1.0-9/17884015_1320605161368948_2071637162927692074_n.jpg?oh=ee42c6fb4098c1ef146b43eac1a9e6ef&oe=597EEFFC", message);
-    })
+    //get disaster information
+    if (disasterKeyword) {
+        getDisaster(location,function(disasterMessage){
+            message = "";
+            if (!disasterMessage) {
+                message = "No Information";
+            }else {
+                 message = "Latest Disater Information Near "+ location +", "+disasterMessage.state + ": ";
+                message += " Title:"  + disasterMessage.title + ". ";
+                message += " Incident Type: " + disasterMessage.incidentType + ". ";
+                message += " County Area: " + disasterMessage.declaredCountyArea + ". ";
+                message += " Begin Date: " + disasterMessage.incidentBeginDate + ". ";
+                message += " End Date: " + disasterMessage.incidentEndDate + ". ";
+            }
+           
+            Bot.sendText(senderID, message);
+        });
+    }else {
+        // get weather information
+        weatherResponse(time, location, senderID, (weatherJSON) => {
+            // use weather information to compose message
+            activityMessageText = heuristics.applyActivityMessage(text,  weatherJSON);      // if suitable for activities
+            weatherMessageText = weatherMessage(weatherJSON);                               // general report
+            message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
+            Bot.sendText(senderID, message);
+        })
+    }
+    
 });
-
-function sendTemplateMessage(senderID, image, message){
-    Bot.sendGenericTemplate(senderID, [
-        {
-            "title": "WEATHERBOT WOOOOO",
-            "image_url": image,
-            "subtitle": message,
-            "default_action": {
-                "type": "web_url",
-                "url": "https://peterssendreceiveapp.ngrok.io/view?item=103",
-                "messenger_extensions": false,
-                "webview_height_ratio": "tall",
-                "fallback_url": "https://peterssendreceiveapp.ngrok.io/"
-            },
-            // "default_action": {
-            //     "type": "web_url",
-            //     "url": "https://www.facebook.com",
-            //     "messenger_extensions": false,
-            //     "webview_height_ratio": "tall",
-            //     "fallback_url": "https://www.facebook.com"
-            // },
-            "buttons":[
-                {
-                    "type":"postback",
-                    "title":"What about tomorrow?",
-                    "payload":"tomorrow"
-                },{
-                    "type":"postback",
-                    "title":"How about next week?",
-                    "payload":"nextweek"
-                }              
-            ]      
-        }
-    ]);
-}
 
 Bot.on('postback', event => {
     console.log("RECEIVED POSTBACK");
@@ -130,7 +109,7 @@ function weatherMessage(weatherJSON){
         message = "The weather now in " + weatherJSON.location + " is " + weatherJSON.temp_c + " C/ " 
                 + weatherJSON.temp_f + " F. It is \'" + weatherJSON.condition + "\'. Real feel: " 
                 + weatherJSON.feelslike_c + " C/ " + weatherJSON.feelslike_f + "F.";
-    } else if (weatherJSON.forecasthour){
+    } else if(weatherJSON.forecasthour){
         equalityWord = (weatherJSON.forecastday === 0) ? "is" : "will be";
         message = "The weather in " + weatherJSON.location + " of date: " + weatherJSON.date + " at " + weatherJSON.time + " " 
                 + equalityWord + " " + weatherJSON.temp_c + " C/" + weatherJSON.temp_f + " F. It "
@@ -149,14 +128,14 @@ function weatherMessage(weatherJSON){
 function weatherResponse(time, location, senderID, callback){
     forecastDay = getForecastDay(time.day);
     console.log("Forecast of " + forecastDay + " days.");
-
-    if (time.hour){
+    if(time.hour){
         getResponse.forecastHourlyWeather(time.hour, location,forecastDay.toString(), (weatherJSON) => {
-            console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
-            callback(weatherJSON);
-        });
-    } else {
-        // location === -1 case is handled at Bot.on("text") scope
+                console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
+                callback(weatherJSON);
+            });
+    }
+    else{
+         // location === -1 case is handled at Bot.on("text") scope
         if (forecastDay === 1){
             getResponse.currentWeather(location, (weatherJSON) => {
                 console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
@@ -169,8 +148,6 @@ function weatherResponse(time, location, senderID, callback){
             });
         }
     }       
-
-
     // // location === -1 case is handled at Bot.on("text") scope
     // if (forecastDay === 1){
     //     getResponse.currentWeather(location, (weatherJSON) => {

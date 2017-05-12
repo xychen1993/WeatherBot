@@ -1,21 +1,22 @@
 var request = require('request')
 
 
-function getDisasterJson(state) {
+function getDisasterJson(state, callback) {
   
   var url = "https://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries?$filter=state eq "
   url += "'" + state + "'"
   url += "&$format=json&$orderby=incidentBeginDate desc&$top=1"
-  console.log(url)
+  // console.log(url)
 
   requestJsonFile(url, function(body){
-    console.log(body.DisasterDeclarationsSummaries)
+    disasterMessage = body.DisasterDeclarationsSummaries[0]
+    callback(disasterMessage);
   });
 
 }
 
 //Using google map's api to get state name from city name
-function getDisaster(cityName) {
+exports.getDisaster = function(cityName, callback) {
   var url = "http://maps.googleapis.com/maps/api/geocode/json?address="
   url += cityName
   url += "&sensor=false"
@@ -23,7 +24,7 @@ function getDisaster(cityName) {
   requestJsonFile(url, function(body){
     var formatted_address = body.results[0].formatted_address.split(", ")
     var stateName = formatted_address[1]
-    getDisasterJson(stateName)
+    getDisasterJson(stateName, callback)
 
   });
   
@@ -39,8 +40,6 @@ function requestJsonFile(url, callback) {
      }
   })
 }
-
-getDisaster("EVANSTON")
 
 
 
