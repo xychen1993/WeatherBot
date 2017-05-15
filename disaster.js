@@ -11,7 +11,7 @@ function getDisasterJson(state, callback) {
 
   requestJsonFile(url, function(body){
     console.log("in disaster request body, JSON: \n", JSON.stringify(body, null, 4));
-    disasterMessage = body.DisasterDeclarationsSummaries[0]
+    disasterMessage = body.DisasterDeclarationsSummaries
     callback(disasterMessage);
   });
 }
