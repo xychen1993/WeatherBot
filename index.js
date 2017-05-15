@@ -40,6 +40,7 @@ Bot.on('text', (event) => {
         Bot.sendText(senderID, message);
     } else if (getIfDisasterCase(text)) {
         // disaster case
+        console.log("in disaster case");
         getDisaster(location, function(disasterJSON){
             message = disasterMessage(location, disasterJSON);
             Bot.sendText(senderID, message);

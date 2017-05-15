@@ -7,8 +7,10 @@ function getDisasterJson(state, callback) {
   url += "'" + state + "'"
   url += "&$format=json&$orderby=incidentBeginDate desc&$top=1"
   // console.log(url)
+  console.log("in getDisasterJson, url: ", url);
 
   requestJsonFile(url, function(body){
+    console.log("in disaster request body, JSON: \n", JSON.stringify(body, null, 4));
     disasterMessage = body.DisasterDeclarationsSummaries[0]
     callback(disasterMessage);
   });
@@ -19,8 +21,10 @@ exports.getDisaster = function(cityName, callback) {
   var url = "http://maps.googleapis.com/maps/api/geocode/json?address="
   url += cityName
   url += "&sensor=false"
+  console.log("in exports.getdisaster, url: ", url);
   
   requestJsonFile(url, function(body){
+    console.log("in state name request body, JSON: \n", JSON.stringify(body, null, 4));
     var formatted_address = body.results[0].formatted_address.split(", ")
     var stateName = formatted_address[1]
     getDisasterJson(stateName, callback)
