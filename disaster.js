@@ -1,6 +1,5 @@
 var request = require('request')
 
-
 //Get disaster information use fema api
 function getDisasterJson(state, callback) {
   
@@ -13,7 +12,6 @@ function getDisasterJson(state, callback) {
     disasterMessage = body.DisasterDeclarationsSummaries[0]
     callback(disasterMessage);
   });
-
 }
 
 //Using google map's api to get state name from city name
@@ -26,7 +24,6 @@ exports.getDisaster = function(cityName, callback) {
     var formatted_address = body.results[0].formatted_address.split(", ")
     var stateName = formatted_address[1]
     getDisasterJson(stateName, callback)
-
   });
   
 }

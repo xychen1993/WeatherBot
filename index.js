@@ -5,7 +5,7 @@ const Promise = require('bluebird');
 const getLocation = require('./nlp.js').getLocation;
 const getCase = require('./nlp.js').getCase;
 const getTime = require('./nlp.js').getTime;
-const getDisasterKeyword = require('./nlp.js').getDisasterKeyword;
+const getIfDisasterCase = require('./nlp.js').getIfDisasterCase;
 const getResponse = require('./getWeatherData.js');
 const getDisaster = require('./disaster.js').getDisaster;
 const heuristics = require('./heuristics.js');
@@ -16,7 +16,7 @@ const verify_token = process.env.VERIFY_TOKEN;
 userCache = {};
 
 // initialize Bot and define event handlers
-Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
+Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
@@ -24,8 +24,6 @@ Bot.on('text', (event) => {
     const senderID = event.sender.id;
     const text = event.message.text;
     console.log("\nreceived text message: " + text);
-
-    if (bbseddit(text, senderID)){return};
 
     // get case
     var location = getLocation(text);
@@ -36,27 +34,18 @@ Bot.on('text', (event) => {
     console.log("location (post-cache): " + location);
 
     var time = getTime(text)
-    var disasterKeyword = getDisasterKeyword(text)
 
-    //get disaster information
-    if (disasterKeyword) {
-        getDisaster(location,function(disasterMessage){
-            message = "";
-            if (!disasterMessage) {
-                message = "No Information";
-            }else {
-                 message = "Latest Disater Information Near "+ location +", "+disasterMessage.state + ": ";
-                message += " Title:"  + disasterMessage.title + ". ";
-                message += " Incident Type: " + disasterMessage.incidentType + ". ";
-                message += " County Area: " + disasterMessage.declaredCountyArea + ". ";
-                message += " Begin Date: " + disasterMessage.incidentBeginDate + ". ";
-                message += " End Date: " + disasterMessage.incidentEndDate + ". ";
-            }
-           
+    if (bbseddit(text)){
+        message = sayyit();
+        Bot.sendText(senderID, message);
+    } else if (getIfDisasterCase(text)) {
+        // disaster case
+        getDisaster(location, function(disasterJSON){
+            message = disasterMessage(location, disasterJSON);
             Bot.sendText(senderID, message);
         });
-    }else {
-        // get weather information
+    } else {
+        // weather/activity case
         weatherResponse(time, location, senderID, (weatherJSON) => {
             // use weather information to compose message
             activityMessageText = heuristics.applyActivityMessage(text,  weatherJSON);      // if suitable for activities
@@ -64,8 +53,7 @@ Bot.on('text', (event) => {
             message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
             Bot.sendText(senderID, message);
         })
-    }
-    
+    } 
 });
 
 Bot.on('postback', event => {
@@ -79,19 +67,6 @@ Bot.on('postback', event => {
         default:
             console.log("postback case not found");
             Bot.sendText(senderID, "didn't catch that");
-            
-    // case PostBackTypes.TELL_JOKE:
-    // Bot.sendText(senderID, JOKE);
-    // Bot.sendButtons(
-    // senderID,
-    // 'Ha. Ha. Ha. What else may I do for you?',
-    // [Bot.createPostbackButton('Tell me another joke', PostBackTypes.TELL_ANOTHER_JOKE)]
-    // );
-    // break;
-    // case PostBackTypes.TELL_ANOTHER_JOKE:
-    // Bot.sendText(senderID, 'Sorry, I only know one joke');
-    break;
-
     }
 });
 
@@ -130,9 +105,9 @@ function weatherResponse(time, location, senderID, callback){
     console.log("Forecast of " + forecastDay + " days.");
     if(time.hour){
         getResponse.forecastHourlyWeather(time.hour, location,forecastDay.toString(), (weatherJSON) => {
-                console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
-                callback(weatherJSON);
-            });
+            console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
+            callback(weatherJSON);
+        });
     }
     else{
          // location === -1 case is handled at Bot.on("text") scope
@@ -148,18 +123,6 @@ function weatherResponse(time, location, senderID, callback){
             });
         }
     }       
-    // // location === -1 case is handled at Bot.on("text") scope
-    // if (forecastDay === 1){
-    //     getResponse.currentWeather(location, (weatherJSON) => {
-    //         console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
-    //         callback(weatherJSON);
-    //     });
-    // } else {
-    //     getResponse.forecastWeather(location,forecastDay.toString(), (weatherJSON) => {
-    //         console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
-    //         callback(weatherJSON);
-    //     });
-    // }
 
     // functions ------------------------------
     function getForecastDay(time){
@@ -177,17 +140,34 @@ function weatherResponse(time, location, senderID, callback){
     }
 }
 
+function disasterMessage(city, disasterJSON){
+    console.log("city,", city);
+    cityInEnglish = city.charAt(0).toUpperCase() + city.slice(1);
+    message = "";
+    if (!disasterJSON) {
+        message = "No Information";
+    } else {
+        message = "Latest Disater Information Near "+ cityInEnglish +", " + disasterJSON.state + ": ";
+        message += " Title: "  + disasterJSON.title + ". ";
+        message += " Incident Type: " + disasterJSON.incidentType + ". ";
+        message += " County Area: " + disasterJSON.declaredCountyArea + ". ";
+        message += " Begin Date: " + disasterJSON.incidentBeginDate + ". ";
+        message += " End Date: " + disasterJSON.incidentEndDate + ". ";
+    }
+    return message;
+}
+
 // deploy server
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-// /webhook for fb and /webhook/localChat/ for local chat
+// webhook for fb and /webhook/localChat/ for local chat
 app.use('/webhook', Bot.router());
 
-// /* for checking if online
+// for checking if online
 app.get('/', function (req, res) {
-    res.send('WeatherBot is online')
+    res.send('WeatherBot is online');
 })
 
 // start server
@@ -200,20 +180,23 @@ var server = app.listen((process.env.PORT || 5000), (err)=>{
 });
 return server;
 
-function bbseddit(text, senderID){
+function bbseddit(text){
     text = text.toUpperCase();
     matches = [
-        "do you get what I'm saying here",
-        "namsayin",
-        "am I making sense here",
-        "am I making sense"
+        'sayin',
+        'here',
+        "making sense",
+        "am i"
     ];
-    responses = ["no", "not really", "uhh"];
     for (var i=0; i<matches.length; i++){
         if (text.includes(matches[i].toUpperCase())){
-            Bot.sendText(senderID, responses[Math.floor(Math.random() * responses.length)]);
             return true;    
         }
     }
     return false;
+}
+
+function sayyit(){
+    responses = ["no", "not really", "uhh", "lol", "tbh not really", ":')"];
+    return responses[Math.floor(Math.random() * responses.length)];
 }
