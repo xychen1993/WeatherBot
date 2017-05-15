@@ -16,7 +16,7 @@ const verify_token = process.env.VERIFY_TOKEN;
 userCache = {};
 
 // initialize Bot and define event handlers
-Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
+Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
