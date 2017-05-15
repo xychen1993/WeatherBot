@@ -143,7 +143,7 @@ function weatherResponse(time, location, senderID, callback){
 
 function disasterMessage(city, disasterJSON){
     console.log("city,", city);
-    cityInEnglish = city.charAt(0).toUpperCase() + city.slice(1);
+    cityInEnglish = city[0].charAt(0).toUpperCase() + city[0].slice(1);
     message = "";
     if (!disasterJSON) {
         message = "No Information";
