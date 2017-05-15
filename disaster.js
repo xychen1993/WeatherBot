@@ -40,6 +40,12 @@ function requestJsonFile(url, callback) {
   }, function (error, response, body) {
      if (!error && response.statusCode === 200) {
       callback(body);
+     } else if (error){
+      console.log("error while making get request:");
+      console.log(JSON.stringify(error, null, 4));
+     } else {
+      console.log("HTTP error while making get request:");
+      console.log(JSON.stringify(body, null, 4));
      }
   })
 }
