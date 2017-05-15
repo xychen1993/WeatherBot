@@ -3,7 +3,7 @@ var request = require('request')
 //Get disaster information use fema api
 function getDisasterJson(state, callback) {
   
-  var url = "https://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries?\$filter=state eq "
+  var url = "http://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries?\$filter=state eq "
   url += "'" + state + "'"
   url += "&\$format=json&\$orderby=incidentBeginDate desc&\$top=1"
   // console.log(url)
