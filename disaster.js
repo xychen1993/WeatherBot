@@ -2,18 +2,17 @@ var request = require('request')
 
 //Get disaster information use fema api
 function getDisasterJson(state, callback) {
-  var url = "https://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries?$top=10"
-  // var url = "http://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries?\$filter=state eq "
-  // url += "'" + state + "'"
-  // url += "&\$format=json&\$orderby=incidentBeginDate desc&\$top=1"
+  // var url = "https://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries?$top=10"
+  var url = "http://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries?\$filter=state eq "
+  url += "'" + state + "'"
+  url += "&\$format=json&\$orderby=incidentBeginDate desc&\$top=1"
   console.log(url)
   console.log("in getDisasterJson, url: ", url);
 
   requestJsonFile(url, function(body){
     console.log("in disaster request body, JSON: \n", JSON.stringify(body, null, 4));
-    //disasterMessage = body.DisasterDeclarationsSummaries[0]
-    console.log("information body:", body);
-    //callback(disasterMessage);
+    disasterMessage = body.DisasterDeclarationsSummaries[0]
+    callback(disasterMessage);
   });
 }
 
