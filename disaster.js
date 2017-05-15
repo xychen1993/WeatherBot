@@ -4,7 +4,7 @@ var request = require('request')
 function getDisasterJson(state, callback) {
   
   var url = 'https://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries?$filter=state eq '
-  url += ''' + state + '''
+  url += "'" + state + "'"
   url += '&$format=json&$orderby=incidentBeginDate desc&$top=1'
   // console.log(url)
   console.log("in getDisasterJson, url: ", url);
