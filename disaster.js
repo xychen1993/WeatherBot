@@ -2,7 +2,7 @@ var request = require('request')
 
 //Get disaster information use fema api
 function getDisasterJson(state, callback) {
-  var url = "https://api.reliefweb.int/v1/reports/1082221?appname=apidoc&fields[include][]=source.name"
+  var url = "https://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries?$top=10"
   // var url = "http://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries?\$filter=state eq "
   // url += "'" + state + "'"
   // url += "&\$format=json&\$orderby=incidentBeginDate desc&\$top=1"
