@@ -126,27 +126,40 @@ exports.getLocation = function (myText){
 
 
 exports.getTime = function (myText){
-	var out = nlp(myText).match('#Date? (now|days|day|week|weeks|hourly|tomorrow|tuesday|monday|wednesday|thursday|friday|saturday|sunday)');
+	var out = nlp(myText).match('(now|day|week|weeks|hourly|tomorrow|tuesday|monday|wednesday|thursday|friday|saturday|sunday)');
 	
-	var reg = /[0-9]+(\s)*[ap]m/gi;
 	var r = myText.toString();
-	var hourly = r.match(reg);
-	//console.log("Found " + r.match(reg));
+	var reg_hour = /[0-9]+(\s)*[ap]m/gi;   //
+	var hourly = r.match(reg_hour);
+
+	var reg_day_number = /[0-9]+[-(\s)*]day[s]?(\s)forecast/gi;
+	var day_number = r.match(reg_day_number);
+	var reg_number = /[0-9]+/gi;
+	var number_day = null;
+	if(day_number)
+		number_day = parseInt(day_number.toString().match(reg_number));
+	
+	
 	var time = "";
 
 	if(out.length == 0){
 		time = {
 			day: 'now',
-			hour: hourly
+			hour: hourly,
+			day_number: number_day
 		}
 	}
 	else{
 		time = {
 			day: out.out('array'),
-			hour: hourly
+			hour: hourly,
+			day_number: number_day
 		}
 	}
-	return time
+
+	// console.log("In getTime " + time.day + " OUT: " + out.out('array'))
+
+	return time;
 
 	// if (out.length == 0) return 'now'
 	// else return out.out('array')

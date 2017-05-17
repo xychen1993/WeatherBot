@@ -160,6 +160,20 @@ exports.countDay = function(day){
 		var str = day.toString().split(" ");
 		day = str[1];
 	}
+
+	var more_days = 0;
+	if(day.toString().includes(" ")){
+		var str = day.toString().split(" ");
+		day = str[0];
+		more_days = parseInt(str[1]);
+	}
+	if(day == "now")
+		return more_days;
+
+
+
+	var now = new Date(); 
+
 	var nextDay = 0;
 	switch(day.toString()){
 		case "monday":
@@ -185,13 +199,13 @@ exports.countDay = function(day){
 			break;
 	}
 	//console.log(nextDay);
-    var now = new Date(); 
+    // var now = new Date(); 
 
     if(nextDay > now.getDay()){
-    	return nextDay - now.getDay();
+    	return nextDay - now.getDay() + more_days;
     }
     else{
-    	return nextDay + 7 - now.getDay();
+    	return nextDay + 7 - now.getDay() + more_days;
     }
 }
 

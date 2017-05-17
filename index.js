@@ -51,13 +51,37 @@ Bot.on('text', (event) => {
         });
     } else {
         // weather/activity case
-        weatherResponse(time, location, senderID, (weatherJSON) => {
-            // use weather information to compose message
-            activityMessageText = heuristics.applyActivityMessage(text,  weatherJSON);      // if suitable for activities
-            weatherMessageText = weatherMessage(weatherJSON);                               // general report
-            message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
-            Bot.sendText(senderID, message);
-        })
+        if(time.day_number){
+            if(time.day_number >= 10)
+                Bot.sendText(senderID, "Sorry, I don't know the weather for soo many days in the future. Try to ask for any number less than 10.");
+            else{
+                // console.log("Days of forecast in INDEX " + time.day_number);
+                    for(var i = 0; i < time.day_number; i++){
+                        if (i != 0)
+                            time.day = time.day.toString().substring(0, time.day.toString().length-2) + " " + i;
+                        else
+                            time.day = time.day + " " + i;
+                        // console.log(time.day);
+                        weatherResponse(time, location, senderID, (weatherJSON) => {
+                // use weather information to compose message
+                            activityMessageText = heuristics.applyActivityMessage(text,  weatherJSON);      // if suitable for activities
+                            weatherMessageText = weatherMessage(weatherJSON);                               // general report
+                            message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
+                            Bot.sendText(senderID, message);
+                        })
+                    }
+                }
+        }
+        else{
+        //console.log("Just one day");
+            weatherResponse(time, location, senderID, (weatherJSON) => {
+        // use weather information to compose message
+                activityMessageText = heuristics.applyActivityMessage(text,  weatherJSON);      // if suitable for activities
+                weatherMessageText = weatherMessage(weatherJSON);                               // general report
+                message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
+                Bot.sendText(senderID, message);
+            })
+        }
     } 
 });
 
@@ -84,8 +108,9 @@ function weatherMessage(weatherJSON){
     // weatherJSON.feelslike_c
     // weatherJSON.condition
     // weatherJSON.forecastday
-
-    if (weatherJSON.date == "NOW"){
+    if (!weatherJSON.date){
+        message = weatherJSON;
+    } else if (weatherJSON.date == "NOW"){
         message = "The weather now in " + weatherJSON.location + " is " + weatherJSON.temp_c + " C/ " 
                 + weatherJSON.temp_f + " F. It is \'" + weatherJSON.condition + "\'. Real feel: " 
                 + weatherJSON.feelslike_c + " C/ " + weatherJSON.feelslike_f + "F.";
@@ -108,6 +133,10 @@ function weatherMessage(weatherJSON){
 function weatherResponse(time, location, senderID, callback){
     forecastDay = getForecastDay(time.day);
     console.log("Forecast of " + forecastDay + " days.");
+    if(forecastDay > 10){
+        callback("Sorry, I don't know the weather for the " + forecastDay + "th day in the future.");
+        return;
+    }
     if(time.hour){
         getResponse.forecastHourlyWeather(time.hour, location,forecastDay.toString(), (weatherJSON) => {
             console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
