@@ -44,6 +44,10 @@ Bot.on('text', (event) => {
         getDisaster(location, function(disasterJSON){
             message = disasterMessage(location, disasterJSON);
             Bot.sendText(senderID, message);
+        }, (errorBody) => {
+            message = "error trying to find disaster info:\n";
+            message += JSON.stringify(errorBody, null, 4);
+            Bot.sendText(senderID, message);
         });
     } else {
         // weather/activity case
