@@ -13,7 +13,8 @@ const heuristics = require('./heuristics.js');
 const token = process.env.PAGE_ACCESS_TOKEN;
 const verify_token = process.env.VERIFY_TOKEN;
 
-userCache = {};
+locationCache = {};
+activityCache = {};
 
 // initialize Bot and define event handlers
 Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
@@ -28,9 +29,9 @@ Bot.on('text', (event) => {
     // get case
     var location = getLocation(text);
     console.log("location (pre-cache): " + location);
-    if (!location && userCache[senderID]){location = userCache[senderID].location;} // read from cache
-    if (location){userCache[senderID] = {"location": location}}                     // write to cache
-    if (location == -1){location = "Evanston"}                                      // default to Evanston
+    if (!location && locationCache[senderID]){location = locationCache[senderID].location;}     // read from cache
+    if (location){locationCache[senderID] = {"location": location}}                             // write to cache
+    if (location == -1){location = "Evanston"}                                                  // default to Evanston
     console.log("location (post-cache): " + location);
 
     var time = getTime(text)
@@ -51,37 +52,31 @@ Bot.on('text', (event) => {
         });
     } else {
         // weather/activity case
-        if(time.day_number){
-            if(time.day_number >= 10)
+        if (time.day_number){
+            if (time.day_number >= 10){
                 Bot.sendText(senderID, "Sorry, I don't know the weather for soo many days in the future. Try to ask for any number less than 10.");
-            else{
+                return;
+            } else {
                 // console.log("Days of forecast in INDEX " + time.day_number);
-                    for(var i = 0; i < time.day_number; i++){
-                        if (i != 0)
-                            time.day = time.day.toString().substring(0, time.day.toString().length-2) + " " + i;
-                        else
-                            time.day = time.day + " " + i;
-                        // console.log(time.day);
-                        weatherResponse(time, location, senderID, (weatherJSON) => {
-                // use weather information to compose message
-                            activityMessageText = heuristics.applyActivityMessage(text,  weatherJSON);      // if suitable for activities
-                            weatherMessageText = weatherMessage(weatherJSON);                               // general report
-                            message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
-                            Bot.sendText(senderID, message);
-                        })
+                for (var i = 0; i < time.day_number; i++){
+                    if (i != 0){
+                        time.day = time.day.toString().substring(0, time.day.toString().length-2) + " " + i;
+                    } else {
+                        time.day = time.day + " " + i;
                     }
+                    // console.log(time.day);
                 }
+            }
         }
-        else{
-        //console.log("Just one day");
-            weatherResponse(time, location, senderID, (weatherJSON) => {
-        // use weather information to compose message
-                activityMessageText = heuristics.applyActivityMessage(text,  weatherJSON);      // if suitable for activities
-                weatherMessageText = weatherMessage(weatherJSON);                               // general report
-                message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
-                Bot.sendText(senderID, message);
-            })
-        }
+
+        weatherResponse(time, location, senderID, (weatherJSON) => {
+            // use weather information to compose message
+            activityCache = heuristics.setActivityCache(text, senderID, activityCache);
+            activityMessageText = heuristics.applyActivityMessage(text, activityCache, senderID, weatherJSON);      // if suitable for activities
+            weatherMessageText = weatherMessage(weatherJSON);                               // general report
+            message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
+            Bot.sendText(senderID, message);
+        })
     } 
 });
 
@@ -139,7 +134,7 @@ function weatherResponse(time, location, senderID, callback){
     }
     if(time.hour){
         getResponse.forecastHourlyWeather(time.hour, location,forecastDay.toString(), (weatherJSON) => {
-            console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
+            console.log("weatherJSON in weatherresponse: time.hour: \n" + JSON.stringify(weatherJSON, null, 4));
             callback(weatherJSON);
         });
     }
@@ -147,12 +142,12 @@ function weatherResponse(time, location, senderID, callback){
          // location === -1 case is handled at Bot.on("text") scope
         if (forecastDay === 1){
             getResponse.currentWeather(location, (weatherJSON) => {
-                console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
+                console.log("weatherJSON in weatherresponse: forecastday1: \n" + JSON.stringify(weatherJSON, null, 4));
                 callback(weatherJSON);
             });
         } else {
             getResponse.forecastWeather(location,forecastDay.toString(), (weatherJSON) => {
-                console.log("weatherJSON: \n" + JSON.stringify(weatherJSON, null, 4));
+                console.log("weatherJSON in weatherresponse: else: \n" + JSON.stringify(weatherJSON, null, 4));
                 callback(weatherJSON);
             });
         }
