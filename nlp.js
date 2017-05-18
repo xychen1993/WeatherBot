@@ -126,7 +126,7 @@ exports.getLocation = function (myText){
 
 
 exports.getTime = function (myText){
-	var out = nlp(myText).match('(now|day|week|weeks|hourly|tomorrow|tuesday|monday|wednesday|thursday|friday|saturday|sunday)');
+	var out = nlp(myText).match('(now|week|weeks|hourly|tomorrow|tuesday|monday|wednesday|thursday|friday|saturday|sunday)');
 	
 	var r = myText.toString();
 	var reg_hour = /[0-9]+(\s)*[ap]m/gi;   //
@@ -157,7 +157,7 @@ exports.getTime = function (myText){
 		}
 	}
 
-	// console.log("In getTime " + time.day + " OUT: " + out.out('array'))
+	console.log("In getTime " + time.day_number + " OUT: " + out.out('array'))
 
 	return time;
 

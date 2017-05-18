@@ -54,7 +54,7 @@ exports.currentWeather = function(query, callback){
     }).end();
 }
 
-exports.forecastWeather = function(query, noOfDays, callback){
+exports.forecastWeather = function(query, left, right,callback, errorcallback){
 	var newQuery = "";
 	if(query.toString().indexOf(' ') >= 0){
 		var arr = query.toString().split(' ');
@@ -62,11 +62,11 @@ exports.forecastWeather = function(query, noOfDays, callback){
 	}
 	else
 		newQuery = query;
-	options.path = '/v1/forecast.json?key=' + apiKey + '&q=' + newQuery + '&days=' + noOfDays;
+	options.path = '/v1/forecast.json?key=' + apiKey + '&q=' + newQuery + '&days=' + right;
 	var str = '';
 	var result = '';
 
-	var forecastday = parseInt(noOfDays) - 1;
+	var forecastday = parseInt(left);
 
 	http.request(options, (res) => {
 	  res.setEncoding('utf8');
@@ -76,20 +76,33 @@ exports.forecastWeather = function(query, noOfDays, callback){
 	  res.on('end', (chunk) => {
 	  	forecast = JSON.parse(str);
 
+        // console.log("forecast.forecast.forecastday.slice(left).length:", forecast.forecast.forecastday.slice(left).length)
+        // console.log("forecast.forecast.forecastday.length:", forecast.forecast.forecastday.length)
+
+        if (!forecast || !forecast.location || !forecast.location.name){
+        	errorcallback("unexpected callback from api");
+        	return;
+        }
+
 	  	result = {
             location: forecast.location.name,
             date: forecast.forecast.forecastday[forecastday].date,
             temp_f: forecast.forecast.forecastday[forecastday].day.avgtemp_f,
             temp_c: forecast.forecast.forecastday[forecastday].day.avgtemp_c,
             condition: forecast.forecast.forecastday[forecastday].day.condition.text,
-            forecastday: forecastday
+            forecastday: forecastday,
+            extra: forecast.forecast.forecastday.slice(left)
         }
-	  	callback(result);
+
+        // console.log(result);
+
+        console.log("in getWeatherData.forecastWeather with multiday left right: " + left + " " + right);
+        callback(result);
 	  });
 	}).on('error', function(err) {
         // handle errors with the request itself
         console.error('Error with the request:', err.message);
-        callback(err);
+        errorcallback(err);
     }).end();
 }
 

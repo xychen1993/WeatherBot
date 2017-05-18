@@ -17,7 +17,7 @@ locationCache = {};
 activityCache = {};
 
 // initialize Bot and define event handlers
-Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
+Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
@@ -52,24 +52,30 @@ Bot.on('text', (event) => {
         });
     } else {
         // weather/activity case
-        if (time.day_number){
-            if (time.day_number >= 10){
-                Bot.sendText(senderID, "Sorry, I don't know the weather for soo many days in the future. Try to ask for any number less than 10.");
-                return;
-            } else {
-                // console.log("Days of forecast in INDEX " + time.day_number);
-                for (var i = 0; i < time.day_number; i++){
-                    if (i != 0){
-                        time.day = time.day.toString().substring(0, time.day.toString().length-2) + " " + i;
-                    } else {
-                        time.day = time.day + " " + i;
-                    }
-                    // console.log(time.day);
-                }
-            }
-        }
+        // if (time.day_number){
+        if (time.day_number >= 10){
+            Bot.sendText(senderID, "Sorry, I don't know the weather for soo many days in the future. Try to ask for any number less than 10.");
+            return;
+        } 
+        // else {
+        //         // console.log("Days of forecast in INDEX " + time.day_number);
+        //         for (var i = 0; i < time.day_number; i++){
+        //             if (i != 0){
+        //                 time.day = time.day.toString().substring(0, time.day.toString().length-2) + " " + i;
+        //             } else {
+        //                 time.day = time.day + " " + i;
+        //             }
+        //             // console.log(time.day);
+        //         }
+        //     }
+        // }
 
-        weatherResponse(time, location, senderID, (weatherJSON) => {
+        weatherResponse(time, location, senderID, time.day_number,(weatherJSON) => {
+            if (!weatherJSON || !weatherJSON.location){
+                console.log("ERROR: weatherResponse gave back unexpected object at scope Bot.on(test)");
+                Bot.sendText(senderID, "my api just failed...");
+                return;
+            }
             // use weather information to compose message
             activityCache = heuristics.setActivityCache(text, senderID, activityCache);
             activityMessageText = heuristics.applyActivityMessage(text, activityCache, senderID, weatherJSON);      // if suitable for activities
@@ -125,9 +131,9 @@ function weatherMessage(weatherJSON){
     return message;
 }
 
-function weatherResponse(time, location, senderID, callback){
+function weatherResponse(time, location, senderID, day_number, callback){
     forecastDay = getForecastDay(time.day);
-    console.log("Forecast of " + forecastDay + " days.");
+    console.log("Forecast of " + parseInt(day_number) + " days. Starting from " + forecastDay + " to " + day_number);
     if(forecastDay > 10){
         callback("Sorry, I don't know the weather for the " + forecastDay + "th day in the future.");
         return;
@@ -140,15 +146,18 @@ function weatherResponse(time, location, senderID, callback){
     }
     else{
          // location === -1 case is handled at Bot.on("text") scope
-        if (forecastDay === 1){
+        if (forecastDay === 1 && (!day_number || day_number == 0)){
             getResponse.currentWeather(location, (weatherJSON) => {
                 console.log("weatherJSON in weatherresponse: forecastday1: \n" + JSON.stringify(weatherJSON, null, 4));
                 callback(weatherJSON);
             });
         } else {
-            getResponse.forecastWeather(location,forecastDay.toString(), (weatherJSON) => {
-                console.log("weatherJSON in weatherresponse: else: \n" + JSON.stringify(weatherJSON, null, 4));
+            getResponse.forecastWeather(location, forecastDay.toString(), day_number,(weatherJSON) => {
+                console.log("weatherJSON in weatherresponse: else: ");
                 callback(weatherJSON);
+            }, (error) => {
+                console.log("ERROR: weatherJSON in weatherresponse: else, and got an error!");
+                callback({});
             });
         }
     }       
