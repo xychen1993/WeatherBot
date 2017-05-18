@@ -190,6 +190,8 @@ function disasterMessage(city, disasterJSON){
             message += " County Area: " + disasterJSON.declaredCountyArea + ". ";
             message += " Begin Date: " + disasterJSON.incidentBeginDate + ". ";
             message += " End Date: " + disasterJSON.incidentEndDate + ". ";
+            var linkedNews = "http://www.news.google.com/news/section?q=" + disasterJSON.incidentType + "+" + disasterJSON.declaredCountyArea;
+            console.log("linked URL is ", linkedNews)
 
         }
         
