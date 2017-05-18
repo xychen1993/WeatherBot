@@ -176,12 +176,23 @@ function disasterMessage(city, disasterJSON){
     if (!disasterJSON) {
         message = "No Information";
     } else {
-        message = "Latest Disater Information Near "+ cityInEnglish +", " + disasterJSON.state + ": ";
-        message += " Title: "  + disasterJSON.title + ". ";
-        message += " Incident Type: " + disasterJSON.incidentType + ". ";
-        message += " County Area: " + disasterJSON.declaredCountyArea + ". ";
-        message += " Begin Date: " + disasterJSON.incidentBeginDate + ". ";
-        message += " End Date: " + disasterJSON.incidentEndDate + ". ";
+
+        var newDate = new Date()
+        newDate.setMonth(newDate.getMonth() - 1);
+        console.log("seven days: ",newDate)
+        if (disasterJSON.incidentEndDate < newDate.toJSON()) {
+            message = "No disaters in the past month"
+
+        }else {
+            message = "Latest Disater Information Near "+ cityInEnglish +", " + disasterJSON.state + ": ";
+            message += " Title: "  + disasterJSON.title + ". ";
+            message += " Incident Type: " + disasterJSON.incidentType + ". ";
+            message += " County Area: " + disasterJSON.declaredCountyArea + ". ";
+            message += " Begin Date: " + disasterJSON.incidentBeginDate + ". ";
+            message += " End Date: " + disasterJSON.incidentEndDate + ". ";
+
+        }
+        
     }
     return message;
 }
