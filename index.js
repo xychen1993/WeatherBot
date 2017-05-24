@@ -152,6 +152,9 @@ function weatherResponse(time, location, senderID, day_number, callback){
                 callback(weatherJSON);
             });
         } else {
+            if(!day_number){
+                day_number = forecastDay;
+            }
             getResponse.forecastWeather(location, forecastDay.toString(), day_number,(weatherJSON) => {
                 console.log("weatherJSON in weatherresponse: else: ");
                 callback(weatherJSON);
