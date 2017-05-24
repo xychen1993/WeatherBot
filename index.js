@@ -114,7 +114,7 @@ Bot.on('postback', event => {
             Bot.sendText(senderID, "nah, fuck off");
             break;
         case PostBackTypes.GET_NEWS:
-            Bot.sendText(senderID, 'http://www.news.google.com/news/section?q=Fire+Lee');
+            Bot.sendText(senderID, linkedNews);
             break;
         default:
             console.log("postback case not found");
