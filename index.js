@@ -12,6 +12,11 @@ const heuristics = require('./heuristics.js');
 
 const token = process.env.PAGE_ACCESS_TOKEN;
 const verify_token = process.env.VERIFY_TOKEN;
+var linkedNews;
+
+const PostBackTypes = {
+ GET_NEWS:'GET_NEWS'
+};
 
 locationCache = {};
 activityCache = {};
@@ -44,7 +49,21 @@ Bot.on('text', (event) => {
         console.log("in disaster case");
         getDisaster(location, function(disasterJSON){
             message = disasterMessage(location, disasterJSON);
-            Bot.sendText(senderID, message);
+            console.log("message:",message);
+            if (message == "No disaters in the past month") {
+                Bot.sendText(senderID, message);
+
+            } else {
+                console.log("disaters link is ", linkedNews);
+                Bot.sendButtons(
+                      senderID,
+                      message,
+                      [
+                        Bot.createPostbackButton('Open website for disaters', PostBackTypes.GET_NEWS)
+                      ]
+                    );
+            }
+            
         }, (errorBody) => {
             message = "error trying to find disaster info:\n";
             message += JSON.stringify(errorBody, null, 4);
@@ -93,6 +112,9 @@ Bot.on('postback', event => {
     switch(event.postback.payload) {
         case "tomorrow":
             Bot.sendText(senderID, "nah, fuck off");
+            break;
+        case PostBackTypes.GET_NEWS:
+            Bot.sendText(senderID, 'http://www.news.google.com/news/section?q=Fire+Lee');
             break;
         default:
             console.log("postback case not found");
@@ -192,6 +214,7 @@ function disasterMessage(city, disasterJSON){
         if (disasterJSON.incidentEndDate < newDate.toJSON()) {
             message = "No disaters in the past month"
 
+
         }else {
             message = "Latest Disater Information Near "+ cityInEnglish +", " + disasterJSON.state + ": ";
             message += " Title: "  + disasterJSON.title + ". ";
@@ -199,7 +222,7 @@ function disasterMessage(city, disasterJSON){
             message += " County Area: " + disasterJSON.declaredCountyArea + ". ";
             message += " Begin Date: " + disasterJSON.incidentBeginDate + ". ";
             message += " End Date: " + disasterJSON.incidentEndDate + ". ";
-            var linkedNews = "http://www.news.google.com/news/section?q=" + disasterJSON.incidentType + "+" + disasterJSON.declaredCountyArea;
+            linkedNews = "http://www.news.google.com/news/section?q=" + disasterJSON.incidentType + "+" + disasterJSON.declaredCountyArea.split(" ")[0];
             console.log("linked URL is ", linkedNews)
 
         }
