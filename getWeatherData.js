@@ -68,6 +68,9 @@ exports.forecastWeather = function(query, left, right,callback, errorcallback){
 
 	var forecastday = parseInt(left);
 
+	if(left == right)
+		forecastday = forecastday-1;
+
 	http.request(options, (res) => {
 	  res.setEncoding('utf8');
 	  res.on('data', (chunk) => {
