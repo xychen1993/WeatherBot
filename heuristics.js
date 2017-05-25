@@ -1,3 +1,6 @@
+const getResponse = require('./getWeatherData.js');
+
+
 // all_weather_conditions
 // [
 // 		"sunny",
@@ -229,11 +232,6 @@ activities = {
         "agnostic_weather_conditions": moderate
     },
     "walk": {
-        "temp_range_low": 60,
-        "temp_range_high": 83,
-        "agnostic_weather_conditions": moderate
-    },
-    "run": {
         "temp_range_low": 60,
         "temp_range_high": 83,
         "agnostic_weather_conditions": moderate
@@ -502,10 +500,15 @@ activities = {
         "temp_range_low": 1000,
         "temp_range_high": 1001,
         "agnostic_weather_conditions": picky
+    },
+    "goodthing": {
+        "temp_range_low": -90,
+        "temp_range_high": 1001,
+        "agnostic_weather_conditions": warrior
     }
 }
 
-exports.applyActivityMessage = function (query, activitiesCache, senderID, weatherJSON){
+exports.applyActivityMessage = function (query, activitiesCache, senderID, weatherJSON, callback){
     // returns empty string if none applicable
     // returns reason not to if something applies
     message = "";
@@ -530,35 +533,78 @@ exports.applyActivityMessage = function (query, activitiesCache, senderID, weath
         console.log("info.temp_range_low: ", info.temp_range_low)
         console.log("info.temp_range_high: ", info.temp_range_high)
 
+        console.log("MAH NIGGUH EXPECTSSS");
+        console.log(JSON.stringify(weatherJSON, null, 4));
+        response = getIfShouldGo(weatherJSON, info);
+        message += response.message + ".";
+        shouldGo = response.shouldGo;
+
+        if (!shouldGo){
+            console.log("message is: " +message);
+            message = "It may not be good weather for " + activity + "" + message;
+            location = weatherJSON.location;
+            getResponse.forecastWeather(location, 0, 9, (newWeatherJSON)=>{
+                for (var dayi=0; dayi<newWeatherJSON.extra.length; dayi++){
+                    day = newWeatherJSON.extra[dayi];
+                    for (var houri=0; houri<day.hour.length; houri++){
+                        hour = day.hour[houri];
+                        queryWeatherJSON = {
+                            temp_f: hour.temp_f,
+                            temp_c: hour.temp_c,
+                            condition: hour.condition.text
+                        };
+                        if (getIfShouldGo(queryWeatherJSON, info).shouldGo){
+                            message += " It will be better to go in " + String(dayi)
+                            message += " days at " + String(houri) + ":00, when it will be " 
+                            message += hour.temp_f + " and " + hour.condition.text + " out."
+                            callback(message);
+                            return;
+                        };
+                    }
+                }
+                // console.log(JSON.stringify(weatherJSON, null, 4));
+                callback(message);
+                return;
+            }, (error)=>{
+                console.log("error in applyActivityMessage in if !shouldgo blah blah blah"); 
+            });
+            return;
+        }
+    }
+
+    message = "It will be good weather for " + activity + ". " + message;
+    callback(message);
+    return;
+
+    function getIfShouldGo(weatherJSON, info){
+        ans = {
+            message: "",
+            shouldGo: true
+        };
         if (Number(weatherJSON.temp_f) < info.temp_range_low){
-            message += " (it will be too cold)"
-            shouldGo = false;
+            ans.message += " (it will be too cold)"
+            ans.shouldGo = false;
+            return ans;
         } else if (Number(weatherJSON.temp_f) > info.temp_range_high){
-            message += " (it will be too hot)"
-            shouldGo = false;
+            ans.message += " (it will be too hot)"
+            ans.shouldGo = false;
+            return ans;
         }
 
         for (condition in info.agnostic_weather_conditions){
             if (info.agnostic_weather_conditions.hasOwnProperty(condition)) {
                 if (info.agnostic_weather_conditions[condition]){
                     if (weatherJSON.condition.toUpperCase().includes(condition.toUpperCase())){
-                        message += " (it is " + condition + ")";
-                        shouldGo = false;
+                        ans.message += " (it is " + condition + ")";
+                        ans.shouldGo = false;
+                        return ans;
                     }
                 }
             }
         }
-
-        if (!shouldGo){
-            message = "It may not be good weather for " + activity + "," + message
-        }
+        return ans;
     }
-
-    if (message !== ""){
-        message += "."
-    }
-
-    return(message);}
+}
 
 exports.loadActivities = function(){return activities}
 

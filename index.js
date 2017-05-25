@@ -17,7 +17,8 @@ locationCache = {};
 activityCache = {};
 
 // initialize Bot and define event handlers
-Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
+Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
+// Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
@@ -78,10 +79,13 @@ Bot.on('text', (event) => {
             }
             // use weather information to compose message
             activityCache = heuristics.setActivityCache(text, senderID, activityCache);
-            activityMessageText = heuristics.applyActivityMessage(text, activityCache, senderID, weatherJSON);      // if suitable for activities
-            weatherMessageText = weatherMessage(weatherJSON);                               // general report
-            message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
-            Bot.sendText(senderID, message);
+            heuristics.applyActivityMessage(text, activityCache, senderID, weatherJSON, (activityMessageText)=>{
+                // if suitable for activities
+                weatherMessageText = weatherMessage(weatherJSON);                               // general report
+                message = (activityMessageText === "") ? weatherMessageText : activityMessageText + " " + weatherMessageText;   // final message
+                Bot.sendText(senderID, message);
+            });
+                
         })
     } 
 });
