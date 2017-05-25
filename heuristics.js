@@ -554,8 +554,9 @@ exports.applyActivityMessage = function (query, activitiesCache, senderID, weath
                             condition: hour.condition.text
                         };
                         if (getIfShouldGo(queryWeatherJSON, info).shouldGo){
-                            message += " It will be better to go in " + String(dayi)
-                            message += " days at " + String(houri) + ":00, when it will be " 
+                            message += " It will be better to go "
+                            message += (dayi === 0) ? "today" : "in " + String(dayi) + " days"
+                            message += " at " + String(houri) + ":00, when it will be " 
                             message += hour.temp_f + " and " + hour.condition.text + " out."
                             callback(message);
                             return;
