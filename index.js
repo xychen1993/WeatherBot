@@ -51,16 +51,16 @@ Bot.on('text', (event) => {
         getDisaster(location, function(disasterJSON){
             message = disasterMessage(location, disasterJSON);
             console.log("message:",message);
-            if (message == "No disaters in the past month") {
+            if (message == "No disasters in the past month") {
                 Bot.sendText(senderID, message);
 
             } else {
-                console.log("disaters link is ", linkedNews);
+                console.log("disasters link is ", linkedNews);
                 Bot.sendButtons(
                       senderID,
                       message,
                       [
-                        Bot.createPostbackButton('Open website for disaters', PostBackTypes.GET_NEWS)
+                        Bot.createPostbackButton('Open website for disasters', PostBackTypes.GET_NEWS)
                       ]
                     );
             }
@@ -219,7 +219,7 @@ function disasterMessage(city, disasterJSON){
         newDate.setMonth(newDate.getMonth() - 1);
         console.log("seven days: ",newDate)
         if (disasterJSON.incidentEndDate < newDate.toJSON()) {
-            message = "No disaters in the past month"
+            message = "No disasters in the past month"
 
 
         }else {
