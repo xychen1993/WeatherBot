@@ -153,6 +153,13 @@ function weatherMessage(weatherJSON){
                 + equalityWord + " " + weatherJSON.temp_c + " C/" + weatherJSON.temp_f + " F. It "
                 + equalityWord + " \'" + weatherJSON.condition + "\'.";
     }
+    if(weatherJSON.temp_C > 20) {
+        message += " This is warm relative to average";
+    } else if (weatherJSON.temp_C > 0) {
+        message += " This is about average";
+    } else {
+        message += " This is cold";
+    }
 
     return message;
 }
