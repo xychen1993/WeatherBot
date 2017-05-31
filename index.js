@@ -14,6 +14,7 @@ const token = process.env.PAGE_ACCESS_TOKEN;
 const verify_token = process.env.VERIFY_TOKEN;
 var linkedNews;
 
+const helpTemplate = "Welcome to WeatherBot, your conversational Weather assistant! I can tell you about the weather, natural disasters in the area, and recommend if the weather is good for outdoors activites. Here are a few things you might ask: \"How is the weather in Honolulu?\", \"How about tomorrow?\", \"Should I go kayaking today?\", \"Are there any disasters in Dallas?\"."
 const PostBackTypes = {
  GET_NEWS:'GET_NEWS'
 };
@@ -27,10 +28,22 @@ Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
+    
     // extract some parameters
     const senderID = event.sender.id;
     const text = event.message.text;
     console.log("\nreceived text message: " + text);
+
+    // meta stuff
+    lower = text.toLowerCase();
+    helpWords = ["help", "commands", "usage", "--help", "readme", "man"]
+    for (var i=0; i<helpWords.length; i++){
+        if (lower.includes(helpWords[i])){
+            message = helpTemplate;
+            Bot.sendText(senderID, message);
+            return;
+        }
+    }
 
     // get case
     var location = getLocation(text);
