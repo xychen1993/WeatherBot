@@ -518,9 +518,14 @@ exports.applyActivityMessage = function (query, activitiesCache, senderID, weath
     console.log(JSON.stringify(relevant_activities));
 
     if (relevant_activities.length === 0 && activitiesCache[senderID]){
-        relevant_activities = activitiesCache[senderID];
-        console.log("loaded activities from cache, activities are now:");
-        console.log(JSON.stringify(relevant_activities));
+        if (query.toLowerCase().includes("about")){
+            relevant_activities = activitiesCache[senderID];
+            console.log("loaded activities from cache, activities are now:");
+            console.log(JSON.stringify(relevant_activities));
+        } else {
+            activitiesCache[senderID] = relevant_activities;
+            console.log("destroyed activitesCache for user", senderID);
+        }
     }
 
     shouldGo = true;
@@ -533,15 +538,13 @@ exports.applyActivityMessage = function (query, activitiesCache, senderID, weath
         console.log("info.temp_range_low: ", info.temp_range_low)
         console.log("info.temp_range_high: ", info.temp_range_high)
 
-        console.log("MAH NIGGUH EXPECTSSS");
-        console.log(JSON.stringify(weatherJSON, null, 4));
         response = getIfShouldGo(weatherJSON, info);
         message += response.message + ".";
         shouldGo = response.shouldGo;
 
         if (!shouldGo){
             console.log("message is: " +message);
-            message = "It may not be good weather for " + activity + "" + message;
+            message = "It may not be good weather for " + activity.toLowerCase() + "" + message;
             location = weatherJSON.location;
             getResponse.forecastWeather(location, 0, 9, (newWeatherJSON)=>{
                 for (var dayi=0; dayi<newWeatherJSON.extra.length; dayi++){
@@ -573,7 +576,10 @@ exports.applyActivityMessage = function (query, activitiesCache, senderID, weath
         }
     }
 
-    message = "It will be good weather for " + activity + ". " + message;
+    if (relevant_activities.length > 0 && shouldGo){
+        message = "It will be good weather for " + activity.toLowerCase() + message;
+    }
+
     callback(message);
     return;
 
@@ -596,7 +602,7 @@ exports.applyActivityMessage = function (query, activitiesCache, senderID, weath
             if (info.agnostic_weather_conditions.hasOwnProperty(condition)) {
                 if (info.agnostic_weather_conditions[condition]){
                     if (weatherJSON.condition.toUpperCase().includes(condition.toUpperCase())){
-                        ans.message += " (it is " + condition + ")";
+                        ans.message += " (it is " + condition.toLowerCase() + ")";
                         ans.shouldGo = false;
                         return ans;
                     }

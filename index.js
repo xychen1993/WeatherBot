@@ -22,8 +22,8 @@ locationCache = {};
 activityCache = {};
 
 // initialize Bot and define event handlers
-Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
-// Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
+// Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
+Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
@@ -34,8 +34,10 @@ Bot.on('text', (event) => {
 
     // get case
     var location = getLocation(text);
+    console.log("locationCache:");
+    console.log(JSON.stringify(locationCache));
     console.log("location (pre-cache): " + location);
-    if (!location && locationCache[senderID]){location = locationCache[senderID].location;}     // read from cache
+    if ((!location || location == -1) && locationCache[senderID]){location = locationCache[senderID].location;}     // read from cache
     if (location){locationCache[senderID] = {"location": location}}                             // write to cache
     if (location == -1){location = "Evanston"}                                                  // default to Evanston
     console.log("location (post-cache): " + location);
@@ -154,11 +156,11 @@ function weatherMessage(weatherJSON){
                 + equalityWord + " \'" + weatherJSON.condition + "\'.";
     }
     if(weatherJSON.temp_C > 20) {
-        message += " This is warm relative to average";
+        message += " This is warm relative to average.";
     } else if (weatherJSON.temp_C > 0) {
-        message += " This is about average";
+        message += " This is about average.";
     } else {
-        message += " This is cold";
+        message += " This is cold.";
     }
 
     return message;
