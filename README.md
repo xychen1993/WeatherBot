@@ -8,6 +8,7 @@ Messenger chat bot with conversational weather reporting
 * Outdoors activity recommendations
 * Weather context reporting based on location's historical weather 
 * Tells news of local disasters
+* Support for local chat and heroku hosted messenger bot
 
 ## Installation
 
