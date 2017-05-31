@@ -287,7 +287,6 @@ function bbseddit(text){
     text = text.toUpperCase();
     matches = [
         'sayin',
-        'here',
         "making sense",
         "am i"
     ];
