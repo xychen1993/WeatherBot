@@ -22,8 +22,8 @@ locationCache = {};
 activityCache = {};
 
 // initialize Bot and define event handlers
-// Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
-Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
+Bot.init(token, verify_token, true /*useLocalChat*/, true /*useMessenger*/);
+// Bot.init(token, verify_token, true /*useLocalChat*/, false /*useMessenger*/);
 
 // on text message
 Bot.on('text', (event) => {
