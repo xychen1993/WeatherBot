@@ -21,5 +21,5 @@ node index.js
 
 ## Usage
 
-**Local**: chat locally at [localhost:5000/webhook/localChat/](http://localhost:5000/webhook/localChat/)
+**Local**: chat locally at [localhost:5000/webhook/localChat/](http://localhost:5000/webhook/localChat/)  
 **Online**: deploy to a Heroku hosted bot by setting PAGE_ACCESS_TOKEN and VERIFY_TOKEN environment variables, and pointing the webhook to your heroku server. Take a look at jw84's excellent [walkthrough](https://github.com/jw84/messenger-bot-tutorial).
