@@ -36,7 +36,7 @@ Bot.on('text', (event) => {
 
     // meta stuff
     lower = text.toLowerCase();
-    helpWords = ["help", "commands", "usage", "--help", "readme", "man"]
+    helpWords = ["help", "commands", "usage", "--help", "readme", "man", "can you do"]
     for (var i=0; i<helpWords.length; i++){
         if (lower.includes(helpWords[i])){
             message = helpTemplate;

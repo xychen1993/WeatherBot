@@ -4,10 +4,14 @@ Messenger chat bot with conversational weather reporting
 ![demo](assets/screen.gif)
 ***
 ## Features
-* Location and time range specific weather reports
+* NLP based location city detection and state inference
+* City/activity inference from past queries
+* Multiple weather report modes: hourly, daily
+* Report mode inference based on user query (in english)
 * Outdoors activity recommendations
 * Weather context reporting based on location's historical weather 
-* Tells news of local disasters
+* Alerts users of local disasters in weather area queries
+* Recommends public articles about local disasters
 * Support for local chat and heroku hosted messenger bot
 
 ## Installation
