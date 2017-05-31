@@ -1,7 +1,8 @@
 # WeatherBot :sunny::sunglasses::ok_hand:
 Messenger chat bot with conversational weather reporting
 
-![demo](assets/screen.gif)
+![demo](assets/screen.gif)  
+[Try it yourself here!](https://arcane-ocean-55967.herokuapp.com/webhook/localChat/)
 ***
 ## Features
 * NLP based location city detection and state inference
