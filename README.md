@@ -1,4 +1,4 @@
-# WeatherBot
+# WeatherBot :sunny::sunglasses::ok_hand:
 Messenger chat bot with conversational weather reporting
 
 ![demo](assets/screen.gif)
